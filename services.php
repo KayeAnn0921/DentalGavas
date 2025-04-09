@@ -216,7 +216,7 @@ if (isset($_GET['success'])) {
     </div>
 
     <div class="main-content">
-        <h1 class="page-title">Services Management</h1>
+        <h1 class="page-title">Services</h1>
         
         <?php if ($success_message): ?>
             <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
@@ -227,7 +227,7 @@ if (isset($_GET['success'])) {
         <?php endif; ?>
         
         <div class="form-container">
-            <h2><?php echo $is_edit ? 'Edit Service' : 'Add New Service'; ?></h2>
+            <h2><?php echo $is_edit ? 'Edit Service' : '+Add New Service'; ?></h2>
             
             <form class="service-form" method="POST" action="services.php">
                 <?php if ($is_edit): ?>
