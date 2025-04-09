@@ -54,24 +54,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             if ($is_edit) {
                 // Update existing service
-               // Update existing service
-$stmt = $pdo->prepare("UPDATE services SET 
-service_name = :service_name,
-sub_service_name = :sub_service_name,
-amount = :amount,
-service_id = :service_id
-WHERE id = :id");
+                $stmt = $pdo->prepare("UPDATE services SET 
+                    service_name = :service_name,
+                    sub_service_name = :sub_service_name,
+                    amount = :amount,
+                    service_id = :service_id
+                    WHERE service_id = :id"); // Changed 'id' to 'service_id'
                 
-                $stmt->bindParam(':id', $_POST['id']);
+                $stmt->bindParam(':id', $_POST['id']); // Bind the correct service_id
                 $success_message = 'Service updated successfully!';
             } else {
-                // Insert new service
-               // Insert new service
-$stmt = $pdo->prepare("INSERT INTO services 
-(service_name, amount, created_at, sub_service_name, service_id) 
-VALUES (:service_name, :amount, NOW(), :sub_service_name, :service_id)");
-                $success_message = 'Service added successfully!';
-            }
+                 // Insert new service
+    $stmt = $pdo->prepare("INSERT INTO services 
+    (service_name, amount, created_at, sub_service_name, service_id) 
+    VALUES (:service_name, :amount, NOW(), :sub_service_name, :service_id)");
+$success_message = 'Service added successfully!';
+}
             
             $stmt->bindParam(':service_name', $service['service_name']);
             $stmt->bindParam(':sub_service_name', $service['sub_service_name']);
