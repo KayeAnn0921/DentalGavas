@@ -81,38 +81,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     ?>
     <div class="main-content">
         <h1 class="page-title">User</h1>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".dropdown-toggle").forEach((toggle) => {
-                toggle.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    let parent = this.closest(".dropdown-container");
-                    let arrow = this.querySelector(".arrow");
-
-                    // Close all other dropdowns
-                    document.querySelectorAll(".dropdown-container").forEach((item) => {
-                        if (item !== parent) {
-                            item.classList.remove("active");
-                            item.querySelector(".dropdown").style.display = "none";
-                            item.querySelector(".arrow").style.transform = "rotate(0deg)";
-                        }
-                    });
-
-                    // Toggle current dropdown
-                    parent.classList.toggle("active");
-                    let dropdown = parent.querySelector(".dropdown");
-
-                    if (parent.classList.contains("active")) {
-                        dropdown.style.display = "block";
-                        arrow.style.transform = "rotate(180deg)";
-                    } else {
-                        dropdown.style.display = "none";
-                        arrow.style.transform = "rotate(0deg)";
-                    }
-                });
-            });
-        });
-    </script>
+    
 
 
     <div class="user-section">

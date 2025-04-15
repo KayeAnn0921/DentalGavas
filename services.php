@@ -258,66 +258,6 @@ if (isset($_GET['success'])) {
         </table>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Dropdown functionality
-            document.querySelectorAll(".dropdown-toggle").forEach(toggle => {
-                toggle.addEventListener("click", function(e) {
-                    e.preventDefault();
-                    const parent = this.closest(".dropdown-container");
-                    const arrow = this.querySelector(".arrow");
-                    
-                    // Close other dropdowns
-                    document.querySelectorAll(".dropdown-container").forEach(item => {
-                        if (item !== parent) {
-                            item.classList.remove("active");
-                        }
-                    });
-                    
-                    // Toggle current dropdown
-                    parent.classList.toggle("active");
-                    
-                    // Rotate arrow
-                    arrow.style.transform = parent.classList.contains("active") 
-                        ? "rotate(180deg)" 
-                        : "rotate(0deg)";
-                });
-            });
-            
-            // Highlight current page
-            const currentPage = window.location.pathname.split('/').pop();
-            document.querySelectorAll('.dropdown a').forEach(link => {
-                if (link.getAttribute('href') === currentPage) {
-                    link.classList.add('active');
-                    const container = link.closest('.dropdown-container');
-                    container.classList.add('active');
-                    container.querySelector('.arrow').style.transform = "rotate(180deg)";
-                }
-            });
-            
-            // Search functionality
-            const searchInput = document.getElementById('searchInput');
-            const tableRows = document.querySelectorAll('.service-table tbody tr');
-            
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                
-                tableRows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    let matches = false;
-                    
-                    // Check each cell (except the action cell)
-                    for (let i = 0; i < cells.length - 1; i++) {
-                        if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
-                            matches = true;
-                            break;
-                        }
-                    }
-                    
-                    row.style.display = matches ? '' : 'none';
-                });
-            });
-        });
-    </script>
+    
 </body>
 </html>

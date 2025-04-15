@@ -1,85 +1,207 @@
-/* Reset & Base */
+/* Reset some basic elements */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background-color: #f4f6f9;
     color: #333;
-  }
-  
-  /* Container */
-  .form-section {
-    max-width: 700px;
-    margin: 50px auto;
-    background-color: #fff;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Heading */
-  .form-section h2 {
+}
+
+/* Sidebar style if applicable */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 220px;
+    height: 100%;
+    background-color: #003049;
+    padding: 20px;
+    color: #fff;
+}
+
+.sidebar h2 {
     text-align: center;
-    margin-bottom: 30px;
-    font-size: 24px;
-    color: #222;
-  }
-  
-  /* Form Group */
-  .form-group {
     margin-bottom: 20px;
-  }
-  
-  /* Label */
-  .form-group label {
+    font-size: 22px;
+}
+
+.sidebar a {
+    color: #ddd;
+    text-decoration: none;
     display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  /* Input, Select, Textarea */
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #ccc;
+    margin: 15px 0;
+    padding: 10px;
     border-radius: 5px;
-    font-size: 15px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-    outline: none;
-  }
-  
-  /* Submit Button */
-  .submit-btn {
+}
+
+.sidebar a:hover {
+    background-color: #005792;
+}
+
+/* Main content area */
+.main {
+    margin-left: 240px;
+    padding: 30px;
+}
+
+/* Section title */
+h1 {
+    font-size: 26px;
+    margin-bottom: 20px;
+    color: #003049;
+}
+
+/* Form box styling */
+.course-box {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 800px;
+    margin-bottom: 40px;
+}
+
+/* Form labels and inputs */
+form label {
     display: block;
+    margin-top: 15px;
+    font-weight: 500;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="date"],
+form input[type="time"],
+form input[type="number"],
+form select,
+form textarea {
     width: 100%;
-    max-width: 200px;
-    margin: 30px auto 0;
-    padding: 12px 0;
-    background-color: #2196f3;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+    border-color: #003049;
+    outline: none;
+}
+
+form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Submit button styling */
+form button[type="submit"] {
+    margin-top: 20px;
+    padding: 12px 25px;
+    background-color: #003049;
+    color: #fff;
     border: none;
     border-radius: 6px;
+    font-size: 15px;
     cursor: pointer;
     transition: background-color 0.3s;
-  }
-  
-  .submit-btn:hover {
-    background-color: #1976d2;
-  }
-  
+}
+
+form button[type="submit"]:hover {
+    background-color: #005792;
+}
+
+/* Minor fields */
+#minor-fields {
+    display: none;
+    margin-top: 20px;
+}
+
+/* Patient list header */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0 15px 0;
+}
+
+.list-header h3 {
+    font-size: 20px;
+    color: #003049;
+}
+
+.list-header .search-box {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Table container */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 50px;
+}
+
+table thead {
+    background-color: #003049;
+    color: #fff;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tbody tr:hover {
+    background-color: #eef2f7;
+}
+
+/* Action icons styling */
+.action-icons a {
+    color: #003049;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.action-icons a:hover {
+    color: #e63946;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    form button[type="submit"] {
+        width: 100%;
+    }
+}
