@@ -36,7 +36,7 @@
                 </a>
                 <ul class="dropdown">
                     <li><a href="schedule.php">Schedule</a></li>
-                    <li><a href="appointment.php">Appointments</a></li>
+                    <li><a href="appointmentlist.php">Appointments</a></li>
                 </ul>
             </li>
 

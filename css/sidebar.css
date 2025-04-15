@@ -19,7 +19,9 @@ body {
     overflow-y: auto;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
-
+.dropdown-toggle i {
+    margin-right: 8px; 
+}
 .sidebar ul {
     list-style: none;
     padding: 0;
