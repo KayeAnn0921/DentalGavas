@@ -1,75 +1,160 @@
-/* Reset some basic elements */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: Arial, sans-serif;
 }
 
 body {
-    background-color: #f4f6f9;
-    color: #333;
+    display: flex;
+    background-color: #f4f4f4;
 }
 
-/* Sidebar style if applicable */
 .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 220px;
-    height: 100%;
-    background-color: #003049;
+    width: 250px;
+    height: 100vh;
+    background: #ffffff;
     padding: 20px;
-    color: #fff;
+    position: fixed;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
 
-.sidebar h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 22px;
+.dropdown-toggle i {
+    margin-right: 8px; 
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 5px 0;
 }
 
 .sidebar a {
-    color: #ddd;
     text-decoration: none;
-    display: block;
-    margin: 15px 0;
-    padding: 10px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    font-size: 15px;
+    transition: all 0.3s;
     border-radius: 5px;
 }
 
 .sidebar a:hover {
-    background-color: #005792;
+    background: #f0f0f0;
 }
 
-/* Main content area */
-.main {
-    margin-left: 240px;
-    padding: 30px;
+.arrow {
+    transition: transform 0.3s ease;
+    margin-left: auto;
+    font-size: 12px;
+    color: #666;
 }
 
-/* Section title */
-h1 {
-    font-size: 26px;
-    margin-bottom: 20px;
-    color: #003049;
+.dropdown {
+    display: none;
+    padding-left: 15px;
+    margin-top: 5px;
+    background: #ffffff;
+    border-radius: 5px;
+    padding: 5px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
 }
 
-/* Form box styling */
-.course-box {
-    background-color: #fff;
-    padding: 25px;
+.dropdown a {
+    font-size: 14px;
+    background: transparent;
+    padding: 8px 15px;
+    margin: 0;
+    color: #555;
+}
+
+.dropdown a:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.dropdown-container.active .dropdown {
+    display: block;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    background: #f8f8f8;
+    padding: 15px;
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    max-width: 800px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
-/* Form labels and inputs */
+.logo-container img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #555;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+/* Main Content Styles */
+.main {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    padding: 20px;
+}
+
+.main-course {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.main h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.course-box {
+    padding: 15px;
+}
+
+form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
 form label {
     display: block;
-    margin-top: 15px;
-    font-weight: 500;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
 }
 
 form input[type="text"],
@@ -81,68 +166,75 @@ form select,
 form textarea {
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     font-size: 14px;
-    transition: border-color 0.3s;
-}
-
-form input:focus,
-form select:focus,
-form textarea:focus {
-    border-color: #003049;
-    outline: none;
 }
 
 form textarea {
-    min-height: 80px;
+    height: 80px;
     resize: vertical;
 }
 
-/* Submit button styling */
-form button[type="submit"] {
-    margin-top: 20px;
-    padding: 12px 25px;
-    background-color: #003049;
-    color: #fff;
+form button, 
+.search-button {
+    background-color: #2196F3;
+    color: white;
     border: none;
-    border-radius: 6px;
-    font-size: 15px;
+    padding: 10px 15px;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
     transition: background-color 0.3s;
 }
 
-form button[type="submit"]:hover {
-    background-color: #005792;
+form button {
+    grid-column: span 2;
+    padding: 12px;
 }
 
-/* Minor fields */
-#minor-fields {
-    display: none;
-    margin-top: 20px;
+form button:hover,
+.search-button:hover {
+    background-color: #0b7dda;
 }
 
-/* Patient list header */
-.list-header {
+/* Patient List Section */
+.patient-list-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.patient-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 30px 0 15px 0;
+    margin-bottom: 20px;
 }
 
-.list-header h3 {
-    font-size: 20px;
-    color: #003049;
+.patient-list-header h1 {
+    font-size: 24px;
+    margin: 0;
 }
 
-.list-header .search-box {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.search-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-/* Table container */
+.search-box {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 250px;
+}
+
+/* Table Styles */
 .table-container {
     overflow-x: auto;
 }
@@ -150,58 +242,60 @@ form button[type="submit"]:hover {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 50px;
 }
 
-table thead {
-    background-color: #003049;
-    color: #fff;
-}
-
-table th, table td {
+table th {
+    background-color: #f2f2f2;
     padding: 12px 15px;
-    border: 1px solid #ddd;
     text-align: left;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #ddd;
 }
 
-table tbody tr:nth-child(even) {
+table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+table tr:last-child td {
+    border-bottom: none;
+}
+
+table tr:hover {
     background-color: #f9f9f9;
 }
 
-table tbody tr:hover {
-    background-color: #eef2f7;
+.action-icons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
 }
 
-/* Action icons styling */
 .action-icons a {
-    color: #003049;
-    text-decoration: none;
-    margin-right: 10px;
-    font-size: 18px;
+    color: #555;
+    font-size: 16px;
+    transition: color 0.3s;
 }
 
 .action-icons a:hover {
-    color: #e63946;
+    color: #000;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .main {
-        margin-left: 0;
-        padding: 20px;
-    }
+.fa-edit {
+    color: #2196F3;
+}
 
-    .sidebar {
-        display: none;
-    }
+.fa-trash {
+    color: #f44336;
+}
 
-    .list-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    form button[type="submit"] {
-        width: 100%;
-    }
+/* Minor fields styling */
+#minor-fields {
+    grid-column: span 2;
+    padding: 15px;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
 }

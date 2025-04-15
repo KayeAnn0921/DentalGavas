@@ -109,7 +109,6 @@ try {
     <title>GAVAS DENTAL CLINIC - Patient Information</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/patient.css">
-    
 </head>
 
 <body>
@@ -214,49 +213,52 @@ try {
                 </form>
             </div>
         </section>
-    </section>
-
-    <div class="list-header">
-        <h3>Patient List</h3>
-        <form method="GET" action="patient.php" style="display:flex; gap:10px;">
-            <input type="text" class="search-box" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
-            <button type="submit">Search</button>
-        </form>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Patient ID</th>
-                    <th>Patient Name</th>
-                    <th>Address</th>
-                    <th>Contact</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($result)): ?>
-                    <?php foreach ($result as $row): ?>
+        
+        <!-- Patient List Section -->
+        <section class="patient-list-section">
+            <div class="list-header">
+                <h3>Patient List</h3>
+                <form method="GET" action="patient.php" style="display:flex; gap:10px;">
+                    <input type="text" class="search-box" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
                         <tr>
-                            <td><?= htmlspecialchars($row['patient_id'] ?? '') ?></td>
-                            <td><?= htmlspecialchars(($row['last_name'] ?? '') . ', ' . ($row['first_name'] ?? '') . ' ' . ($row['middle_name'] ?? '')) ?></td>
-                            <td><?= htmlspecialchars($row['home_address'] ?? '') ?></td>
-                            <td><?= htmlspecialchars($row['mobile_number'] ?? '') ?></td>
-                            <td class="action-icons">
-                                <a href="patient.php?edit=<?= $row['patient_id'] ?? '' ?>" title="Edit"><i class="fas fa-edit"></i></a>
-                                <a href="patient.php?delete=<?= $row['patient_id'] ?? '' ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
-                            </td>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Address</th>
+                            <th>Contact</th>
+                            <th>Action</th>
                         </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="5">No patients found</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($result)): ?>
+                            <?php foreach ($result as $row): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['patient_id'] ?? '') ?></td>
+                                    <td><?= htmlspecialchars(($row['last_name'] ?? '') . ', ' . ($row['first_name'] ?? '') . ' ' . ($row['middle_name'] ?? '')) ?></td>
+                                    <td><?= htmlspecialchars($row['home_address'] ?? '') ?></td>
+                                    <td><?= htmlspecialchars($row['mobile_number'] ?? '') ?></td>
+                                    <td class="action-icons">
+                                        <a href="patient.php?edit=<?= $row['patient_id'] ?? '' ?>" title="Edit"><i class="fas fa-edit"></i></a>
+                                        <a href="patient.php?delete=<?= $row['patient_id'] ?? '' ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5">No patients found</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
 
     <script>
         function calculateAge() {
