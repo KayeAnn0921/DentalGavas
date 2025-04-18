@@ -405,89 +405,39 @@ table tr:last-child td {
     color: #777;
 }
 
-/* Service List Header Styles */
-.service-list-header {
+/* Add spacing between search bar and table */
+.table-container {
+    margin-top: 20px;
+}
+
+/* Position search container to the left */
+.search-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 300px;
+}
+
+/* Adjust list header layout */
+.list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    padding: 15px;
-    background: white;
-    border: 1px solid #000;
-    border-radius: 4px;
 }
 
-.service-list-title {
-    font-size: 22px;
-    font-weight: bold;
-    color: #333;
-    margin: 0;
-}
-
-.service-search-container {
+.list-header form {
     display: flex;
-    align-items: center;
-}
-
-.service-search-form {
-    display: flex;
-    align-items: center;
     gap: 10px;
+    width: auto;
+    grid-template-columns: none;
 }
 
-.search-input-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.service-search-input {
-    padding: 8px 15px 8px 35px;
-    border: 1px solid #000;
-    border-radius: 4px;
-    font-size: 14px;
-    width: 250px;
-    height: 36px;
-}
-
-.search-icon {
-    position: absolute;
-    left: 10px;
-    color: #555;
-    font-size: 14px;
-}
-
-.search-service-btn {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    height: 36px;
-    transition: background-color 0.3s;
-}
-
-.search-service-btn:hover {
-    background-color: #0b7dda;
-}
-
-.add-service-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.3s;
-}
-
-.add-service-btn:hover {
-    background-color: #3e8e41;
+.list-header button {
+    padding: 10px 15px;
 }

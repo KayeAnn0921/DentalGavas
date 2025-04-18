@@ -82,6 +82,7 @@ if (isset($_POST['submit'])) {
     }
 }
 
+
 // Fetch patient data for the table
 try {
     if (!empty($search)) {
@@ -244,8 +245,10 @@ try {
                                     <td><?= htmlspecialchars($row['home_address'] ?? '') ?></td>
                                     <td><?= htmlspecialchars($row['mobile_number'] ?? '') ?></td>
                                     <td class="action-icons">
+                                    <a href="view_patient.php?id=<?= $row['patient_id'] ?? '' ?>" title="View"><i class="fas fa-eye"></i></a>
                                         <a href="patient.php?edit=<?= $row['patient_id'] ?? '' ?>" title="Edit"><i class="fas fa-edit"></i></a>
                                         <a href="patient.php?delete=<?= $row['patient_id'] ?? '' ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
+                                        
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
