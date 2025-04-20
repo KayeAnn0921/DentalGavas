@@ -84,3 +84,54 @@ body {
 .save-btn:hover {
     background-color:rgb(158, 166, 250);
 }
+/* Container for action buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Make delete form behave like other buttons */
+.delete-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+/* Base style for all action buttons */
+.action-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 14px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Specific button colors */
+.action-btn.view {
+    background-color: #e0f7fa;
+    color: #00796b;
+}
+
+.action-btn.edit {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.action-btn.delete {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+/* Hover effects */
+.action-btn:hover {
+    opacity: 0.85;
+}

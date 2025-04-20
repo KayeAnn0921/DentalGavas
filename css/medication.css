@@ -119,6 +119,8 @@ button[type="submit"]:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .search-bar input[type="text"] {
@@ -127,6 +129,25 @@ button[type="submit"]:hover {
     border-radius: 4px;
     width: 300px;
     font-size: 14px;
+}
+
+.search-bar button[type="submit"] {
+    width: auto;
+    margin: 0;
+    padding: 10px 15px;
+}
+
+.clear-search, .cancel-btn {
+    color: #666;
+    text-decoration: none;
+    margin-left: 10px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+}
+
+.clear-search:hover, .cancel-btn:hover {
+    background-color: #e0e0e0;
 }
 
 /* Table styling */
@@ -185,6 +206,7 @@ button[type="submit"]:hover {
     justify-content: center;
     padding: 0;
     margin: 0;
+    text-decoration: none;
 }
 
 .action-btn.view {
@@ -201,6 +223,60 @@ button[type="submit"]:hover {
 
 .action-btn i {
     font-size: 16px;
+}
+
+/* View medication details */
+.medication-details {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.detail-row {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.detail-label {
+    font-weight: bold;
+    width: 120px;
+    color: #555;
+}
+
+.detail-value {
+    flex: 1;
+    padding: 8px;
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.back-btn, .edit-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.back-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.edit-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.back-btn:hover {
+    background-color: #5a6268;
+}
+
+.edit-btn:hover {
+    background-color: #218838;
 }
 
 /* Responsive */
@@ -232,4 +308,66 @@ button[type="submit"]:hover {
         display: block;
         overflow-x: auto;
     }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .detail-label {
+        margin-bottom: 5px;
+        width: auto;
+    }
+}
+/* Fix delete button alignment */
+.delete-form {
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Make sure all buttons have the same size */
+.action-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Modified search bar styling for right alignment */
+.search-bar {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-bar h3 {
+    margin: 0;
+}
+
+.search-bar form {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input[type="text"] {
+    margin-right: 5px;
+}
+
+/* Reset some of the default form styles for the search form only */
+.search-bar form button[type="submit"] {
+    width: auto;
+    margin: 0;
 }

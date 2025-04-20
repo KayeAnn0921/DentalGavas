@@ -168,22 +168,20 @@ try {
                                 <td><?= htmlspecialchars($medication['description']) ?></td>
                                 <td><?= htmlspecialchars($medication['id']) ?></td>
                                 <td class="actions-cell">
-                                    <div class="action-buttons">
-                                        <a href="view_medication.php?id=<?= $medication['id'] ?>" class="action-btn view">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        <a href="?action=edit&id=<?= $medication['id'] ?>" class="action-btn edit">
-                                            <i class="fa fa-pencil"></i>
-                                        </a>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="medication_id" value="<?= $medication['id'] ?>">
-                                            <button type="submit" name="delete_medication" class="action-btn delete" 
-                                                    onclick="return confirm('Are you sure you want to delete this medication?')">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
+                            <div class="action-buttons">
+                                <a href="view_medication.php?id=<?= $medication['id'] ?>" class="action-btn view">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="?action=edit&id=<?= $medication['id'] ?>" class="action-btn edit">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                <button type="button" class="action-btn delete" 
+                                    onclick="deleteMedication(<?= $medication['id'] ?>)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+
                             </tr>
                         <?php endforeach; ?>
                         <?php if (empty($medications)): ?>
