@@ -1,19 +1,16 @@
 <?php include 'config.php'; ?>
+<?php include 'sidebar.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scheduling | Gavas Dental Clinic</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/schedule.css">
-    
 </head>
 <body>
-<?php
-    include 'sidebar.php';
-    ?>
     <div class="main-content">
         <div class="scheduling-form">
             <h1 class="form-header">Scheduling</h1>
@@ -54,8 +51,9 @@
                         ?>
                     </select>
                 </div>
-                <button type="submit" class="submit-btn">
-                    <?php echo $is_edit ? 'Update Service' : 'Add Service'; ?>
+                
+                <button type="submit" class="save-btn">
+                    <i class="fas fa-calendar-check"></i> Schedule Appointment
                 </button>
             </form>
         </div>
