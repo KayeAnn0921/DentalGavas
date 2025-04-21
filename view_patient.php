@@ -123,25 +123,6 @@ try {
                     <div class="detail-value"><?= htmlspecialchars($patient['patient_id']) ?></div>
                 </div>
                 
-                <div class="detail-group">
-                    <span class="detail-label">Visit Type:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['visit_type']) ?></div>
-                </div>
-                
-                <div class="detail-group">
-                    <span class="detail-label">Appointment Date:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['appointment_date']) ?></div>
-                </div>
-                
-                <div class="detail-group">
-                    <span class="detail-label">Appointment Time:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['appointment_time']) ?></div>
-                </div>
-                
-                <div class="detail-group">
-                    <span class="detail-label">Date:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['date']) ?></div>
-                </div>
                 
                 <div class="detail-group">
                     <span class="detail-label">Last Name:</span>

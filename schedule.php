@@ -1,54 +1,62 @@
+<?php include 'config.php'; ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scheduling | Gavas Dental Clinic</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/schedule.css">
+    
 </head>
 <body>
-    <?php include 'sidebar.php'; ?>
-
+<?php
+    include 'sidebar.php';
+    ?>
     <div class="main-content">
         <div class="scheduling-form">
             <h1 class="form-header">Scheduling</h1>
-            
-            <form>
+
+            <form action="save_appointment.php" method="POST">
                 <div class="form-group">
                     <label for="visitType">Type of visit:</label>
-                    <select id="visitType">
-                        <option>appointment</option>
-                        <option>walk-in</option>
-                        
+                    <select id="visitType" name="visitType" required>
+                        <option value="appointment">Appointment</option>
+                        <option value="walk-in">Walk-in</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="appointmentDate">Appointment Date:</label>
-                    <input type="date" id="appointmentDate" class="calendar-icon">
+                    <input type="date" id="appointmentDate" name="appointmentDate" required>
                 </div>
 
                 <div class="form-group">
                     <label for="appointmentTime">Appointment Time:</label>
-                    <input type="time" id="appointmentTime">
+                    <input type="time" id="appointmentTime" name="appointmentTime" required>
                 </div>
 
                 <div class="form-group">
                     <label for="contactNumber">Contact Number:</label>
-                    <input type="text" id="contactNumber" placeholder="e.g. 09123456789">
+                    <input type="text" id="contactNumber" name="contactNumber" placeholder="e.g. 09123456789" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="visitType">Service:</label>
-                    <select id="servicetype">
-                        <option>surgery</option>
-                        <option>otho</option>
-                        <option>braces</option>
+                    <label for="service_id">Service:</label>
+                    <select id="service_id" name="service_id" required>
+                        <option value="">-- Select a Service --</option>
+                        <?php
+                        $result = mysqli_query($conn, "SELECT service_id, service_name FROM services");
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            echo '<option value="' . $row['service_id'] . '">' . htmlspecialchars($row['service_name']) . '</option>';
+                        }
+                        ?>
                     </select>
                 </div>
-
-                <button type="submit" class="save-btn">SAVE</button>
+                <button type="submit" class="submit-btn">
+                    <?php echo $is_edit ? 'Update Service' : 'Add Service'; ?>
+                </button>
             </form>
         </div>
     </div>
