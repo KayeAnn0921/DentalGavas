@@ -1,5 +1,5 @@
 <?php include 'config.php'; ?>
-<?php include 'sidebar.php'; ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="css/schedule.css"/>
 </head>
 <body>
+
+<?php include 'sidebar.php'; ?>
   <div class="main-content">
     <div class="scheduling-form">
       <h1 class="form-header">Scheduling</h1>
