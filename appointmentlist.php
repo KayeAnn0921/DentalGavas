@@ -49,7 +49,7 @@
             $sql = "
             SELECT a.*, c.name as service_name, c.price
             FROM appointments a
-            LEFT JOIN classification c ON a.service_id = c.classification_id
+            LEFT JOIN classification c ON a.classification_id = c.classification_id
             WHERE a.appointment_id LIKE :search 
               OR a.type_of_visit LIKE :search 
               OR a.appointment_date LIKE :search 
