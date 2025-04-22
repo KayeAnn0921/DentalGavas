@@ -41,27 +41,42 @@
         </div>
 
         <div class="form-group">
-          <label for="service_id">Service:</label>
-          <select id="service_id" name="service_id" required>
+          <label for="classification_id">Service:</label>
+          <select id="classification_id" name="classification_id" required>
             <option value="">-- Select a Service --</option>
+
             <?php
 try {
-  // Prepare and execute the query using PDO
-  $stmt = $pdo->prepare("SELECT service_id, service_name FROM services");
-  $stmt->execute();
+    // Prepare and execute the query using PDO to get all classifications
+    $stmt = $pdo->prepare("SELECT classification_id, name, parent_id, price FROM classification");
+    $stmt->execute();
 
-  // Fetch all services
-  $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch all classifications
+    $classifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  if ($services) {
-    foreach ($services as $row) {
-      echo '<option value="' . htmlspecialchars($row['service_id']) . '">' . htmlspecialchars($row['service_name']) . '</option>';
+    if ($classifications) {
+        // Function to recursively build options with hierarchy
+        function buildOptions($classifications, $parent_id = null, $indent = 0) {
+            foreach ($classifications as $row) {
+                if ($row['parent_id'] == $parent_id) {
+                    $indentStr = str_repeat('&nbsp;&nbsp;&nbsp;', $indent);
+                    echo '<option value="' . htmlspecialchars($row['classification_id']) . '">' 
+                        . $indentStr . htmlspecialchars($row['name']) 
+                        . ' (₱' . number_format($row['price'], 2) . ')' 
+                        . '</option>';
+                    // Recursively call for child items
+                    buildOptions($classifications, $row['classification_id'], $indent + 1);
+                }
+            }
+        }
+
+        // Start building the options
+        buildOptions($classifications);
+    } else {
+        echo '<option value="">No classifications available</option>';
     }
-  } else {
-    echo '<option value="">No services available</option>';
-  }
 } catch (PDOException $e) {
-  echo '<option value="">Error: ' . htmlspecialchars($e->getMessage()) . '</option>';
+    echo '<option value="">Error: ' . htmlspecialchars($e->getMessage()) . '</option>';
 }
 ?>
 

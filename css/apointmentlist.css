@@ -1,41 +1,161 @@
+/* Reset and base styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+}
 
-    th, td {
-      padding: 12px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
+/* Main Content Area */
+.main-content {
+  margin-left: 250px;
+  padding: 20px;
+  background-color: #fff;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    th {
-      background-color: #f2f2f2;
-    }
+/* Header Style */
+.form-header {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
 
-    .main-content {
-      padding: 20px;
-    }
+/* Search Bar */
+.search-container {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
 
-    .form-header {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
+.search-container form {
+  display: flex;
+  width: 100%;
+  max-width: 500px;
+}
 
-    .action-buttons a {
-      margin-right: 10px;
-      text-decoration: none;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
+.search-container input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 16px;
+}
 
-    .edit-btn {
-      background-color: #4CAF50;
-    }
+.search-container button {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
 
-    .delete-btn {
-      background-color: #f44336;
-    }
+.search-container button:hover {
+  background-color: #3e8e41;
+}
+
+/* Table container */
+.table-responsive {
+  overflow-x: auto;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-family: Arial, sans-serif;
+  margin: 0 auto;
+}
+
+th, td {
+  padding: 12px 15px;
+  border: 1px solid #000;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* Action Buttons */
+.action-buttons {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.action-buttons a {
+  display: inline-block;
+  margin: 0 5px;
+  padding: 6px 12px;
+  text-decoration: none;
+  color: white;
+  border-radius: 4px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.action-buttons a i {
+  margin-right: 5px;
+}
+
+.edit-btn {
+  background-color: #4CAF50;
+}
+
+.edit-btn:hover {
+  background-color: #3e8e41;
+}
+
+.delete-btn {
+  background-color: #f44336;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Zebra Striping */
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect */
+tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 15px;
+  }
+  
+  th, td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .action-buttons a {
+    padding: 5px 8px;
+    font-size: 12px;
+    margin: 0 3px;
+  }
+  
+  .search-container form {
+    max-width: 100%;
+  }
+}
