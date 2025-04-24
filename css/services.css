@@ -1,622 +1,180 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
 
-body {
-    display: flex;
-    background-color: #f4f4f4;
-}
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
-.sidebar {
-    width: 250px;
-    height: 100vh;
-    background: #ffffff;
-    padding: 20px;
-    position: fixed;
-    overflow-y: auto;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-}
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
 
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
+        .form-container {
+            background-color: #fff;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-.sidebar ul li {
-    margin: 5px 0;
-}
+        h1, h2 {
+            color: #333;
+        }
 
-.sidebar a {
-    text-decoration: none;
-    color: #333;
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    font-size: 15px;
-    transition: all 0.3s;
-    border-radius: 5px;
-}
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #007bff;
+        }
 
-.sidebar a:hover {
-    background: #f0f0f0;
-}
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            color: #666;
+            text-align: center;
+        }
 
-.arrow {
-    transition: transform 0.3s ease;
-    margin-left: auto;
-    font-size: 12px;
-    color: #666;
-}
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
 
-.dropdown {
-    display: none;
-    padding-left: 15px;
-    margin-top: 5px;
-    background: #ffffff;
-    border-radius: 5px;
-    padding: 5px 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border: 1px solid #e0e0e0;
-}
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
 
-.dropdown a {
-    font-size: 14px;
-    background: transparent;
-    padding: 8px 15px;
-    margin: 0;
-    color: #555;
-}
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
 
-.dropdown a:hover {
-    background: #e0e0e0;
-    color: #333;
-}
+        button:hover {
+            background-color: #0056b3;
+        }
 
-.dropdown-container.active .dropdown {
-    display: block;
-}
+        .message {
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    background: #f8f8f8;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
 
-.logo-container img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
 
-.logo-text {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-}
+        .classification-container {
+            background-color: #fff;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-.logout-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 12px 15px;
-    background-color: #555;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 20px;
-}
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+        }
 
-.main-content {
-    margin-left: 250px;
-    padding: 30px;
-    width: calc(100% - 250px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        .search-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
 
-.page-title {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-    width: 100%;
-    text-align: center;
-}
+        .search-container button {
+            width: auto;
+            margin: 0;
+            border-radius: 0 4px 4px 0;
+        }
 
-.form-container {
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    align-items: left;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-.add-service-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    justify-content: center;
-}
+        th {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
 
-.service-form {
-    background-color: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    width: 100%;
-}
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
 
-.form-group {
-    margin-bottom: 20px;
-    width: 100%;
-}
+        .main-service {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #555;
-}
+        .sub-service {
+            background-color: #fff;
+        }
 
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
+        .actions {
+            white-space: nowrap;
+        }
 
-.submit-btn {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-    width: 100%;
-}
+        .actions a {
+            padding: 5px 8px;
+            margin-right: 5px;
+            border-radius: 3px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+        }
 
-.service-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 30px;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    max-width: 1000px;
-}
+        .view-btn {
+            background-color: #17a2b8;
+        }
 
-.service-table th, 
-.service-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-}
+        .edit-btn {
+            background-color: #218838;
+        }
 
-.service-table th {
-    background-color: #f8f8f8;
-    font-weight: bold;
-    color: #333;
-}
+        .delete-btn {
+            background-color: #dc3545;
+        }
 
-.service-table tr:last-child td {
-    border-bottom: none;
-}
+        .actions a:hover {
+            opacity: 0.8;
+        }
 
-.action-btn {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 5px;
-}
-
-.edit-btn {
-    background-color: #2196F3;
-    color: white;
-}
-
-.delete-btn {
-    background-color: #f44336;
-    color: white;
-}
-/* Add these to your existing CSS */
-.form-container {
-    width: 90%;
-    max-width: 1200px;
-}
-
-.service-form {
-    width: 100%;
-    padding: 30px;
-}
-
-.form-row {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 20px;
-}
-
-.form-column {
-    flex: 1;
-    min-width: 0;
-}
-
-.form-group {
-    margin-bottom: 25px;
-}
-
-.form-group label {
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.form-group input {
-    padding: 14px;
-    font-size: 15px;
-}
-
-.submit-btn {
-    width: auto;
-    padding: 14px 40px;
-    margin: 20px auto 0;
-    display: block;
-}
-/* Add these to your existing CSS */
-.service-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: left;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.service-list-header h2 {
-    font-size: 20px;
-    color: #333;
-    margin: 0;
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
     
-    
-}
-
-.search-container {
-    position: relative;
-    width: 300px;
-    
-}
-
-.search-input {
-    width: 100%;
-    padding: 10px 15px 10px 35px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.search-container .fa-search {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #777;
-}
-
-.action-cell {
-    display: flex;
-    gap: 8px;
-}
-
-.action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    color: white;
-}
-
-.edit-btn {
-    background-color: #2196F3;
-}
-
-.view-btn {
-    background-color: #4CAF50;
-}
-
-.delete-btn {
-    background-color: #f44336;
-}
-
-/* Table Header Styles */
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0 10px 0;
-    width: 100%;
-}
-
-.service-list-title {
-    font-size: 1.3rem;
-    margin: 0;
-    color: #333;
-    font-weight: 600;
-}
-
-.search-container {
-    position: relative;
-    width: 250px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 8px 15px 8px 35px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.search-container .fa-search {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #777;
-}
-
-/* Table Styles */
-.service-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    margin-top: 0;
-}
-
-.service-table th,
-.service-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.service-table th {
-    background-color: #f8f8f8;
-    font-weight: bold;
-    color: #333;
-}
-
-.service-table tr:last-child td {
-    border-bottom: none;
-}
-
-/* Action Buttons */
-.action-cell {
-    display: flex;
-    gap: 8px;
-}
-
-.action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    color: white;
-}
-
-.edit-btn {
-    background-color: #2196F3;
-}
-
-.delete-btn {
-    background-color: #f44336;
-}
-
-/* Excel-like Table Styling */
-.service-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0 10px 0;
-    width: 100%;
-}
-
-.search-container {
-    position: relative;
-    width: 300px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 8px 15px 8px 35px;
-    border: 1px solid #000;
-    border-radius: 0;
-    font-size: 14px;
-}
-
-.search-container .fa-search {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #000;
-}
-
-.service-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 2px solid #000;
-    margin: 10px 0;
-}
-
-.service-table th, 
-.service-table td {
-    padding: 10px 12px;
-    border: 1px solid #000;
-    text-align: left;
-    font-size: 14px;
-}
-
-.service-table th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-    color: #000;
-}
-
-.service-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.service-table tr:hover {
-    background-color: #f1f1f1;
-}
-
-.action-cell {
-    display: flex;
-    gap: 6px;
-}
-
-.action-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 1px solid #000;
-    color: white;
-    font-size: 12px;
-}
-
-.edit-btn {
-    background-color: #0078d7;
-    border-color: #005a9e;
-}
-
-.delete-btn {
-    background-color: #d83b01;
-    border-color: #a52700;
-}
-
-.action-btn:hover {
-    opacity: 0.9;
-}
-/* Modern Table Styling with Partial Grid Lines */
-.service-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin: 20px 0;
-    font-size: 14px;
-    background-color: transparent;
-}
-
-.service-table th, 
-.service-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-    border-right: 1px solid #e0e0e0;
-}
-
-.service-table th {
-    background-color: #f8f8f8;
-    font-weight: bold;
-    color: #333;
-    border-top: 1px solid #e0e0e0;
-}
-
-.service-table th:first-child,
-.service-table td:first-child {
-    border-left: 1px solid #e0e0e0;
-}
-
-.service-table tr:first-child th {
-    border-top: 1px solid #e0e0e0;
-}
-
-.service-table tr:last-child td {
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.service-table tr:hover td {
-    background-color: #f5f5f5;
-}
-
-/* Action buttons */
-.action-cell {
-    display: flex;
-    gap: 8px;
-}
-
-.action-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    color: white;
-    font-size: 14px;
-}
-
-.edit-btn {
-    background-color: #4CAF50;
-}
-
-.delete-btn {
-    background-color: #f44336;
-}
-
-/* Search container */
-.search-container {
-    position: relative;
-    width: 300px;
-    margin-bottom: 20px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 10px 15px 10px 35px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.search-container .fa-search {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #777;
-}

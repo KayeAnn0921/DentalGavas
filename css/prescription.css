@@ -1,0 +1,104 @@
+/* Reset some basic defaults */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  body {
+    background-color: #f8f9fa;
+    padding: 20px;
+  }
+  
+  .patient-list-section {
+    margin-left: 250px; /* If using a sidebar */
+    padding: 20px;
+  }
+  
+  .list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .list-header h3 {
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .search-box {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 250px;
+  }
+  
+  form button {
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  form button:hover {
+    background-color: #0052a3;
+  }
+  
+  .clear-search {
+    color: #d9534f;
+    text-decoration: none;
+    padding: 8px 12px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+  
+  .clear-search:hover {
+    color: #c9302c;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  thead th {
+    background-color: #007bff;
+    color: white;
+    text-align: left;
+    padding: 12px 16px;
+  }
+  
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .action-icons a {
+    color: #007bff;
+    margin-right: 10px;
+    font-size: 18px;
+    transition: color 0.2s ease;
+  }
+  
+  .action-icons a:hover {
+    color: #0056b3;
+  }
+  
