@@ -1,0 +1,73 @@
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-left: 250px; /* Same as sidebar width */
+        }
+        .recommendation {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        table.legend {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            border: 1px solid #ddd;
+        }
+        table.legend td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .tooth-row {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            align-items: flex-end;
+        }
+        .tooth-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 2px;
+        }
+        .tooth-input {
+            width: 30px;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .tooth-img {
+            width: 30px;
+            height: 30px;
+        }
+        .tooth-number {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        .arch-label {
+            margin: 5px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .chart-container {
+            text-align: center;
+        }
+   

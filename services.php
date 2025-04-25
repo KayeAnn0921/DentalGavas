@@ -127,7 +127,7 @@ function displayClassifications($pdo, $parent_id = null, $indent = 0) {
     </div>
 
     <div class="classification-container">
-        <h2>Classification List</h2>
+        <h2>Services List</h2>
         
         <div class="search-container">
             <form method="GET" action="">

@@ -69,7 +69,7 @@ if (isset($_GET['patient_id'])) {
                             <td><?= $row['home_address'] ?></td>
                             <td><?= $row['mobile_number'] ?></td>
                             <td class="action-icons">
-                                <a href="add_prescription.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
+                                <a href="prescription.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
                                 <a href="add_prescription.php?patient_id=<?= $row['patient_id'] ?>" title="Prescription"><i class="fas fa-notes-medical"></i></a>
                                 
                             </td>
