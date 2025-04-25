@@ -87,7 +87,27 @@ function displayClassifications($pdo, $parent_id = null, $indent = 0) {
         displayClassifications($pdo, $classification['classification_id'], $indent + 1);
     }
 }
+
+// Add these lines after your existing $message initialization at the beginning of the file
+if (isset($_GET['updated'])) {
+    $message = "Service updated successfully!";
+}
+if (isset($_GET['deleted'])) {
+    $message = "Service deleted successfully!";
+}
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'haschildren') {
+        $message = "Cannot delete a service that has sub-services. Delete the sub-services first.";
+    } else if ($_GET['error'] === 'noid') {
+        $message = "No service ID provided.";
+    } else if ($_GET['error'] === 'notfound') {
+        $message = "Service not found.";
+    } else {
+        $message = "Error: " . htmlspecialchars($_GET['error']);
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>
