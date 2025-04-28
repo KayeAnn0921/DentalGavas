@@ -120,8 +120,7 @@ if (isset($_GET['error'])) {
 <?php include 'sidebar.php'; ?>
 
 <div class="main-content">
-    <h1>GAVAS DENTAL CLINIC</h1>
-    <h2>Services</h2>
+   
 
     <div class="form-container">
         <h2>Add New Service</h2>
