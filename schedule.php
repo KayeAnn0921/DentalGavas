@@ -1,6 +1,5 @@
 <?php include 'config.php'; ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,39 +45,46 @@
             <option value="">-- Select a Service --</option>
 
             <?php
-try {
-    // Prepare and execute the query using PDO to get all classifications
-    $stmt = $pdo->prepare("SELECT classification_id, name, parent_id, price FROM classification");
-    $stmt->execute();
+            try {
+                // Prepare and execute the query to get all classifications
+                $stmt = $pdo->prepare("SELECT classification_id, name, parent_id, price FROM classification ORDER BY parent_id, classification_id");
+                $stmt->execute();
 
-    // Fetch all classifications
-    $classifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                // Fetch all classifications
+                $classifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($classifications) {
-        // Function to recursively build options with hierarchy
-        function buildOptions($classifications, $parent_id = null, $indent = 0) {
-            foreach ($classifications as $row) {
-                if ($row['parent_id'] == $parent_id) {
-                    $indentStr = str_repeat('&nbsp;&nbsp;&nbsp;', $indent);
-                    echo '<option value="' . htmlspecialchars($row['classification_id']) . '">' 
-                        . $indentStr . htmlspecialchars($row['name']) 
-                        . ' (₱' . number_format($row['price'], 2) . ')' 
-                        . '</option>';
-                    // Recursively call for child items
-                    buildOptions($classifications, $row['classification_id'], $indent + 1);
+                // Create an associative array with classification_id as key
+                $classification_map = [];
+                foreach ($classifications as $row) {
+                    $classification_map[$row['classification_id']] = $row;
                 }
-            }
-        }
 
-        // Start building the options
-        buildOptions($classifications);
-    } else {
-        echo '<option value="">No classifications available</option>';
-    }
-} catch (PDOException $e) {
-    echo '<option value="">Error: ' . htmlspecialchars($e->getMessage()) . '</option>';
-}
-?>
+                // Function to build options from the map
+                function buildOptions($classifications, $classification_map, $parent_id = null, $indent = 0) {
+                    foreach ($classifications as $row) {
+                        if ($row['parent_id'] == $parent_id) {
+                            $indentStr = str_repeat('&nbsp;&nbsp;&nbsp;', $indent);
+                            echo '<option value="' . htmlspecialchars($row['classification_id']) . '">' 
+                                . $indentStr . htmlspecialchars($row['name']) 
+                                . ' (₱' . number_format($row['price'], 2) . ')' 
+                                . '</option>';
+
+                            // Fetch child classifications
+                            $children = array_filter($classifications, function($item) use ($row) {
+                                return $item['parent_id'] == $row['classification_id'];
+                            });
+                            buildOptions($children, $classification_map, $row['classification_id'], $indent + 1);
+                        }
+                    }
+                }
+
+                // Start building the options
+                buildOptions($classifications, $classification_map);
+
+            } catch (PDOException $e) {
+                echo '<option value="">Error: ' . htmlspecialchars($e->getMessage()) . '</option>';
+            }
+            ?>
 
           </select>
         </div>

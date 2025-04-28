@@ -41,10 +41,9 @@
           <?php
           try {
             $search = isset($_GET['search']) ? $_GET['search'] : '';
-            
-            // Updated SQL query to join with classification table
-            // Check your appointments table structure to find the correct column name
-// It's likely something like 'service_id' or 'classification' instead of 'classification_id'
+            $limit = 10; // Number of records per page
+            $page = isset($_GET['page']) ? $_GET['page'] : 1;
+            $offset = ($page - 1) * $limit;
 
             $sql = "
             SELECT a.*, c.name as service_name, c.price
@@ -58,10 +57,14 @@
               OR c.name LIKE :search 
               OR a.status LIKE :search
             ORDER BY a.appointment_date DESC, a.appointment_time ASC
+            LIMIT :limit OFFSET :offset
             ";
-            
+
             $stmt = $pdo->prepare($sql);
-            $stmt->execute(['search' => "%$search%"]);
+            $stmt->bindParam(':search', $search, PDO::PARAM_STR);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
             $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             if ($appointments) {
@@ -81,6 +84,19 @@
                       </td>";
                 echo "</tr>";
               }
+
+              // Pagination
+              $countStmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE appointment_id LIKE :search OR type_of_visit LIKE :search OR appointment_date LIKE :search OR appointment_time LIKE :search OR contact_number LIKE :search OR c.name LIKE :search OR status LIKE :search");
+              $countStmt->execute(['search' => "%$search%"]);
+              $totalAppointments = $countStmt->fetchColumn();
+              $totalPages = ceil($totalAppointments / $limit);
+
+              // Display Pagination
+              echo '<div class="pagination">';
+              for ($i = 1; $i <= $totalPages; $i++) {
+                  echo '<a href="?page=' . $i . '&search=' . urlencode($search) . '">' . $i . '</a>';
+              }
+              echo '</div>';
             } else {
               echo "<tr><td colspan='9'>No appointments found.</td></tr>";
             }

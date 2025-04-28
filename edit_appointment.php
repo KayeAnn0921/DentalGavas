@@ -2,21 +2,28 @@
 include 'config.php';
 
 if (!isset($_GET['id'])) {
-  echo "No ID specified.";
-  exit;
+    echo "No ID specified.";
+    exit;
 }
 
 $id = $_GET['id'];
 
-$stmt = $pdo->prepare("SELECT * FROM appointments WHERE appointment_id = ?");
-$stmt->execute([$id]);
-$appointment = $stmt->fetch();
+try {
+    // Fetch everything you need once
+    $stmt = $pdo->prepare("SELECT appointment_id, patient_id, type_of_visit, appointment_date, appointment_time, contact_number, status FROM appointments WHERE appointment_id = ?");
+    $stmt->execute([$id]);
+    $appointment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$appointment) {
-  echo "Appointment not found.";
-  exit;
+    if (!$appointment) {
+        echo "Appointment not found.";
+        exit;
+    }
+} catch (PDOException $e) {
+    echo "Error: " . htmlspecialchars($e->getMessage());
+    exit;
 }
 
+// Handle update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $type = $_POST['type'];
   $date = $_POST['date'];
@@ -24,27 +31,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $contact = $_POST['contact'];
   $status = $_POST['status'];
 
-  $update = $pdo->prepare("UPDATE appointments SET type_of_visit=?, appointment_date=?, appointment_time=?, contact_number=?, status=? WHERE appointment_id=?");
-  $update->execute([$type, $date, $time, $contact, $status, $id]);
+  // Validation
+  if (empty($type) || empty($date) || empty($time) || empty($contact) || empty($status)) {
+      echo "All fields are required.";
+  } else {
+      try {
+          $update = $pdo->prepare("UPDATE appointments SET type_of_visit=?, appointment_date=?, appointment_time=?, contact_number=?, status=? WHERE appointment_id=?");
+          $update->execute([$type, $date, $time, $contact, $status, $id]);
 
-  header("Location: appointment_list.php");
-  exit;
+          header("Location: appointmentlist.php");
+          exit;
+      } catch (PDOException $e) {
+          echo "Error updating appointment: " . htmlspecialchars($e->getMessage());
+          exit;
+      }
+  }
 }
-?>
 
+?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Edit Appointment</title>
   <link rel="stylesheet" href="css/editappointment.css">
 </head>
 <body>
-  <?php include 'sidebar.php'; ?>
-  <main>
+<?php include 'sidebar.php'; ?>
+<main>
     <h2>Edit Appointment</h2>
     <form method="POST">
-      <label>Type of Visit:</label>
-      <input type="text" name="type" value="<?php echo htmlspecialchars($appointment['type_of_visit']); ?>" required><br>
+
+    <label>Type of Visit:</label>
+<select name="type" required>
+  <option value="appointment" <?php if ($appointment['type_of_visit'] == 'appointment') echo 'selected'; ?>>Appointment</option>
+  <option value="walk-in" <?php if ($appointment['type_of_visit'] == 'walk-in') echo 'selected'; ?>>Walk-in</option>
+</select><br>
+
 
       <label>Date:</label>
       <input type="date" name="date" value="<?php echo htmlspecialchars($appointment['appointment_date']); ?>" required><br>
@@ -65,6 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <button type="submit">Update Appointment</button>
     </form>
-  </main>
+</main>
 </body>
 </html>
