@@ -1,7 +1,6 @@
 <?php 
 include 'config.php';
 
-
 // Initialize variables
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $result = [];
@@ -38,6 +37,7 @@ if (isset($_GET['edit'])) {
 // Handle form submission
 if (isset($_POST['submit'])) {
     $fields = [
+        'visit_date', 'visit_type', // Moved to the beginning of the array to match form order
         'last_name', 'first_name', 'middle_name', 'birthdate', 'age', 
         'sex', 'civil_status', 'mobile_number', 'email_address', 
         'fb_account', 'home_address', 'work_address', 'occupation', 
@@ -101,6 +101,60 @@ try {
 } catch (PDOException $e) {
     echo "<script>alert('Database error: " . addslashes($e->getMessage()) . "');</script>";
 }
+
+$itemsPerPage = 5;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $itemsPerPage;
+
+$searchTerm = isset($_GET['searchInput']) ? htmlspecialchars($_GET['searchInput']) : '';
+$results = [];
+
+try {
+    // Modify SQL query for search functionality with proper parameter binding
+    if (!empty($searchTerm)) {
+        $sql = "SELECT * FROM patients WHERE 
+                first_name LIKE :searchTerm OR 
+                middle_name LIKE :searchTerm OR 
+                last_name LIKE :searchTerm
+                ORDER BY last_name, first_name
+                LIMIT :offset, :itemsPerPage";
+        $stmt = $pdo->prepare($sql);
+        $likeTerm = "%" . $searchTerm . "%";
+        $stmt->bindValue(':searchTerm', $likeTerm, PDO::PARAM_STR);
+    } else {
+        $sql = "SELECT * FROM patients 
+                ORDER BY last_name, first_name
+                LIMIT :offset, :itemsPerPage";
+        $stmt = $pdo->prepare($sql);
+    }
+    
+    // Bind pagination parameters
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->bindValue(':itemsPerPage', $itemsPerPage, PDO::PARAM_INT);
+    
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Pagination logic (with search filter)
+    $countSql = "SELECT COUNT(*) FROM patients";
+    if (!empty($searchTerm)) {
+        $countSql .= " WHERE first_name LIKE :search OR 
+                       middle_name LIKE :search OR 
+                       last_name LIKE :search";
+    }
+
+    $countStmt = $pdo->prepare($countSql);
+    if (!empty($searchTerm)) {
+        $countStmt->bindValue(':search', $likeTerm, PDO::PARAM_STR);
+    }
+    $countStmt->execute();
+    $totalRecords = $countStmt->fetchColumn();
+    $totalPages = ceil($totalRecords / $itemsPerPage);
+} catch (PDOException $e) {
+    echo "Error fetching records: " . $e->getMessage();
+    $results = [];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -123,6 +177,18 @@ try {
                 <?php if ($edit_mode): ?>
                     <input type="hidden" name="patient_id" value="<?= $patient_data['patient_id'] ?>">
                 <?php endif; ?>
+
+                <!-- Visit date and type fields placed before last name -->
+                <label for="visit_date">Visit Date:</label>
+                <input type="date" name="visit_date" id="visit_date" required
+                       value="<?= htmlspecialchars($edit_mode ? $patient_data['visit_date'] : date('Y-m-d')) ?>">
+
+                <label for="visit_type">Visit Type:</label>
+                <select name="visit_type" id="visit_type" required>
+                    <option value="">Select</option>
+                    <option value="Walk-in" <?= ($edit_mode && $patient_data['visit_type'] == 'Walk-in') ? 'selected' : '' ?>>Walk-in</option>
+                    <option value="Appointment" <?= ($edit_mode && $patient_data['visit_type'] == 'Appointment') ? 'selected' : '' ?>>Appointment</option>
+                </select>
 
                 <label for="last_name">Last Name:</label>
                 <input type="text" name="last_name" id="last_name" required 
@@ -230,7 +296,8 @@ try {
         <div class="list-header">
             <h3>Patient List</h3>
             <form method="GET" action="patient.php" style="display:flex; gap:10px;">
-                <input type="text" class="search-box" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
+               <input type="text" class="search-box" name="searchInput" placeholder="Search..." value="<?= htmlspecialchars($searchTerm) ?>">
+
                 <button type="submit">Search</button>
                 <?php if (!empty($search)): ?>
                     <a href="patient.php" class="clear-search">Clear</a>
@@ -249,21 +316,41 @@ try {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($result as $row): ?>
-                        <tr>
-                            <td><?= $row['patient_id'] ?></td>
-                            <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?></td>
-                            <td><?= $row['home_address'] ?></td>
-                            <td><?= $row['mobile_number'] ?></td>
-                            <td class="action-icons">
-                                <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
-                                <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
-                                <a href="patient.php?delete=<?= $row['patient_id'] ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+    <?php foreach ($results as $row): ?>
+        <tr>
+            <td><?= $row['patient_id'] ?></td>
+            <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?></td>
+            <td><?= $row['home_address'] ?></td>
+            <td><?= $row['mobile_number'] ?></td>
+            <td class="action-icons">
+                <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
+                <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
+                <a href="patient.php?delete=<?= $row['patient_id'] ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</tbody>
+
+            <!-- Pagination links -->
+<div class="pagination">
+    <?php if ($page > 1): ?>
+        <a href="?page=<?= ($page - 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Previous</a>
+    <?php endif; ?>
+
+    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <a href="?page=<?= $i ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>" 
+           class="<?= $i == $page ? 'active' : '' ?>">
+            <?= $i ?>
+        </a>
+    <?php endfor; ?>
+
+    <?php if ($page < $totalPages): ?>
+        <a href="?page=<?= ($page + 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Next</a>
+    <?php endif; ?>
+</div>
+
+
+
         </div>
     </section>
 </section>
@@ -283,6 +370,13 @@ function calculateAge() {
         document.getElementById("minor-fields").style.display = age < 18 ? "block" : "none";
     }
 }
+
+// Set today's date as default for visit_date if it's a new record
+document.addEventListener('DOMContentLoaded', function() {
+    if (!document.querySelector('input[name="patient_id"]')) {
+        document.getElementById('visit_date').value = new Date().toISOString().split('T')[0];
+    }
+});
 </script>
 </body>
 </html>

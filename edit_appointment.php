@@ -25,29 +25,23 @@ try {
 
 // Handle update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $type = $_POST['type'];
-  $date = $_POST['date'];
-  $time = $_POST['time'];
-  $contact = $_POST['contact'];
-  $status = $_POST['status'];
+    $type = $_POST['type'];
+    $date = $_POST['date'];
+    $time = $_POST['time'];
+    $contact = $_POST['contact'];
+    $status = $_POST['status'];
 
-  // Validation
-  if (empty($type) || empty($date) || empty($time) || empty($contact) || empty($status)) {
-      echo "All fields are required.";
-  } else {
-      try {
-          $update = $pdo->prepare("UPDATE appointments SET type_of_visit=?, appointment_date=?, appointment_time=?, contact_number=?, status=? WHERE appointment_id=?");
-          $update->execute([$type, $date, $time, $contact, $status, $id]);
+    try {
+        $update = $pdo->prepare("UPDATE appointments SET type_of_visit=?, appointment_date=?, appointment_time=?, contact_number=?, status=? WHERE appointment_id=?");
+        $update->execute([$type, $date, $time, $contact, $status, $id]);
 
-          header("Location: appointmentlist.php");
-          exit;
-      } catch (PDOException $e) {
-          echo "Error updating appointment: " . htmlspecialchars($e->getMessage());
-          exit;
-      }
-  }
+        header("Location: appointmentlist.php");
+        exit;
+    } catch (PDOException $e) {
+        echo "Error updating appointment: " . htmlspecialchars($e->getMessage());
+        exit;
+    }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <?php include 'sidebar.php'; ?>
 <main>
-    <h2>Edit Appointment</h2>
+  
     <form method="POST">
 
     <label>Type of Visit:</label>

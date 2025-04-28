@@ -122,7 +122,15 @@ try {
                     <span class="detail-label">Patient ID:</span>
                     <div class="detail-value"><?= htmlspecialchars($patient['patient_id']) ?></div>
                 </div>
-                
+
+                 <div class="detail-group">
+                    <span class="detail-label">Visit Date:</span>
+                    <div class="detail-value"><?= htmlspecialchars($patient['visit_date']) ?></div>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Visit Type:</span>
+                    <div class="detail-value"><?= htmlspecialchars($patient['visit_type']) ?></div>
+                </div>
                 
                 <div class="detail-group">
                     <span class="detail-label">Last Name:</span>
