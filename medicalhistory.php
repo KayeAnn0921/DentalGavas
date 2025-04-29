@@ -1,226 +1,255 @@
+<?php
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+include 'config.php';
+
+// Verify database connection
+if (!$pdo) {
+    die("Could not connect to database. Check your config.php file.");
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Collect form data with proper sanitization
+    $good_health = $_POST['good_health'] ?? '';
+    $medical_condition = $_POST['medical_condition'] ?? '';
+    $medical_condition_details = $_POST['medical_condition_details'] ?? '';
+    $serious_illness = $_POST['serious_illness'] ?? '';
+    $serious_illness_details = $_POST['serious_illness_details'] ?? '';
+    $hospitalized = $_POST['hospitalized'] ?? '';
+    $hospitalized_details = $_POST['hospitalized_details'] ?? '';
+    $medication = $_POST['medication'] ?? '';
+    $medication_details = $_POST['medication_details'] ?? '';
+    $smoke = $_POST['smoke'] ?? '';
+    $alcohol = $_POST['alcohol'] ?? '';
+    $drugs = $_POST['drugs'] ?? '';
+    $allergy = $_POST['allergy'] ?? '';
+    $allergy_details = $_POST['allergy_details'] ?? '';
+    $pregnant = $_POST['pregnant'] ?? '';
+    $nursing = $_POST['nursing'] ?? '';
+    $birth_control = $_POST['birth_control'] ?? '';
+    $condition_list = isset($_POST['condition']) ? implode(", ", $_POST['condition']) : '';
+
+    try {
+        // Prepare SQL statement - REMOVED condition_list from query
+        $sql = "INSERT INTO health_questionnaire 
+                (good_health, medical_condition, medical_condition_details, serious_illness, 
+                serious_illness_details, hospitalized, hospitalized_details, medication, 
+                medication_details, smoke, alcohol, drugs, allergy, allergy_details, 
+                pregnant, nursing, birth_control)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $stmt = $pdo->prepare($sql);
+        
+        // Execute with parameters - REMOVED condition_list from parameters
+        $result = $stmt->execute([
+            $good_health, $medical_condition, $medical_condition_details,
+            $serious_illness, $serious_illness_details, $hospitalized, $hospitalized_details,
+            $medication, $medication_details, $smoke, $alcohol, $drugs,
+            $allergy, $allergy_details, $pregnant, $nursing, $birth_control
+        ]);
+
+        if ($result) {
+            // Success - redirect to prevent form resubmission
+            header("Location: ".$_SERVER['PHP_SELF']."?success=1");
+            exit();
+        } else {
+            $errorInfo = $stmt->errorInfo();
+            throw new PDOException("Database error: ".$errorInfo[2]);
+        }
+    } catch (PDOException $e) {
+        $error_message = "Error: " . $e->getMessage();
+        error_log($error_message);
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Health Questionnaire</title>
+  <link rel="stylesheet" href="css/medicalhistory.css"/>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 0;
-      margin: 0;
-    }
-
-    .form-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    .question-group {
-      margin-bottom: 20px;
-    }
-
-    .question {
-      margin-bottom: 20px;
-    }
-
-    label {
-      font-weight: bold;
-    }
-
-    .condition-list {
-      columns: 2;
-      -webkit-columns: 2;
-      -moz-columns: 2;
-      margin-top: 10px;
-    }
-
-    .condition-item {
-      margin-bottom: 8px;
-    }
-
-    .details-input {
-      margin-top: 5px;
-      margin-left: 10px;
-      padding: 5px;
-      width: 60%;
-      display: none;
-    }
-
-    .radio-group {
-      margin-top: 5px;
-    }
+    .error { color: red; }
+    .success { color: green; }
+    .details-input { display: none; margin-top: 5px; }
   </style>
 </head>
 <body>
+    
     <?php include 'sidebar.php'; ?>
+    
+    <!-- Main content container -->
+    <div class="main-content">
+        <div class="form-container">
+            <h1>Health Questionnaire</h1>
 
-<div class="form-container">
+            <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
+                <div class="success">Health questionnaire submitted successfully!</div>
+            <?php endif; ?>
 
-  <h1>Health Questionnaire</h1>
+            <?php if (isset($error_message)): ?>
+                <div class="error"><?php echo htmlspecialchars($error_message); ?></div>
+            <?php endif; ?>
 
-  <form>
+            <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                <div class="question-group">
+                    <div class="question">
+                        <label>Are you in good health?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="good_health" value="Yes" required> Yes
+                            <input type="radio" name="good_health" value="No"> No
+                        </div>
+                    </div>
 
-    <div class="question-group">
+                    <div class="question">
+                        <label>Are you under medical condition right now?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="medical_condition" value="Yes" onclick="showInput('medical_condition_details')" required> Yes
+                            <input type="radio" name="medical_condition" value="No" onclick="hideInput('medical_condition_details')"> No
+                        </div>
+                        <input type="text" id="medical_condition_details" name="medical_condition_details" class="details-input" placeholder="If yes, specify...">
+                    </div>
 
-      <div class="question">
-        <label>Are you in good health?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="good_health" value="Yes"> Yes
-          <input type="radio" name="good_health" value="No"> No
+                    <div class="question">
+                        <label>Have you ever had serious illness or surgical operation?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="serious_illness" value="Yes" onclick="showInput('serious_illness_details')" required> Yes
+                            <input type="radio" name="serious_illness" value="No" onclick="hideInput('serious_illness_details')"> No
+                        </div>
+                        <input type="text" id="serious_illness_details" name="serious_illness_details" class="details-input" placeholder="If yes, specify...">
+                    </div>
+
+                    <div class="question">
+                        <label>Have you ever been hospitalized?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="hospitalized" value="Yes" onclick="showInput('hospitalized_details')" required> Yes
+                            <input type="radio" name="hospitalized" value="No" onclick="hideInput('hospitalized_details')"> No
+                        </div>
+                        <input type="text" id="hospitalized_details" name="hospitalized_details" class="details-input" placeholder="If yes, specify...">
+                    </div>
+
+                    <div class="question">
+                        <label>Are you taking any medication?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="medication" value="Yes" onclick="showInput('medication_details')" required> Yes
+                            <input type="radio" name="medication" value="No" onclick="hideInput('medication_details')"> No
+                        </div>
+                        <input type="text" id="medication_details" name="medication_details" class="details-input" placeholder="If yes, specify...">
+                    </div>
+
+                    <div class="question">
+                        <label>Do you smoke?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="smoke" value="Yes" required> Yes
+                            <input type="radio" name="smoke" value="No"> No
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label>Do you use alcohol?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="alcohol" value="Yes" required> Yes
+                            <input type="radio" name="alcohol" value="No"> No
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label>Do you use drugs?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="drugs" value="Yes" required> Yes
+                            <input type="radio" name="drugs" value="No"> No
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label>Are you allergic to any of the following? (Local Anesthetics, Latex, Penicillin, Aspirin, Others)</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="allergy" value="Yes" onclick="showInput('allergy_details')" required> Yes
+                            <input type="radio" name="allergy" value="No" onclick="hideInput('allergy_details')"> No
+                        </div>
+                        <input type="text" id="allergy_details" name="allergy_details" class="details-input" placeholder="If yes, specify...">
+                    </div>
+
+                    <h2>For Women Only</h2>
+
+                    <div class="question">
+                        <label>Are you pregnant?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="pregnant" value="Yes"> Yes
+                            <input type="radio" name="pregnant" value="No"> No
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label>Are you nursing?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="nursing" value="Yes"> Yes
+                            <input type="radio" name="nursing" value="No"> No
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <label>Are you taking birth control pills?</label><br>
+                        <div class="radio-group">
+                            <input type="radio" name="birth_control" value="Yes"> Yes
+                            <input type="radio" name="birth_control" value="No"> No
+                        </div>
+                    </div>
+                </div>
+
+                <h2>Existing Medical Conditions</h2>
+
+                <div class="condition-list">
+                    <?php
+                    $conditions = [
+                        "High Blood Pressure", "Low Blood Pressure", "Epilepsy/Convulsions", "AIDS or HIV Infection",
+                        "Sexually Transmitted Disease", "Stomach Ulcers", "Fainting/Seizures", "Rapid Weight Loss",
+                        "Joint Replacement", "Heart Surgery", "Heart Attack", "Thyroid Problem", "Heart Disease",
+                        "Heart Murmur", "Hepatitis/Liver Disease", "Rheumatic Fever", "Hay Fever/Allergies",
+                        "Respiratory Problems", "Hepatitis/Jaundice", "Tuberculosis", "Swollen Ankles",
+                        "Kidney Disease", "Diabetes", "Chest Pain"
+                    ];
+                    foreach ($conditions as $condition) {
+                        echo "<div class='condition-item'><input type='checkbox' name='condition[]' value=\"".htmlspecialchars($condition)."\"> ".htmlspecialchars($condition)."</div>";
+                    }
+                    ?>
+                </div>
+
+                <br><br>
+                <div style="text-align:center;">
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
         </div>
-      </div>
-
-      <div class="question">
-        <label>Are you under medical condition right now?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="medical_condition" value="Yes" onclick="showInput('medical_condition_details')"> Yes
-          <input type="radio" name="medical_condition" value="No" onclick="hideInput('medical_condition_details')"> No
-        </div>
-        <input type="text" id="medical_condition_details" class="details-input" placeholder="If yes, specify...">
-      </div>
-
-      <div class="question">
-        <label>Have you ever had serious illness or surgical operation?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="serious_illness" value="Yes" onclick="showInput('serious_illness_details')"> Yes
-          <input type="radio" name="serious_illness" value="No" onclick="hideInput('serious_illness_details')"> No
-        </div>
-        <input type="text" id="serious_illness_details" class="details-input" placeholder="If yes, specify...">
-      </div>
-
-      <div class="question">
-        <label>Have you ever been hospitalized?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="hospitalized" value="Yes" onclick="showInput('hospitalized_details')"> Yes
-          <input type="radio" name="hospitalized" value="No" onclick="hideInput('hospitalized_details')"> No
-        </div>
-        <input type="text" id="hospitalized_details" class="details-input" placeholder="If yes, specify...">
-      </div>
-
-      <div class="question">
-        <label>Are you taking any medication?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="medication" value="Yes" onclick="showInput('medication_details')"> Yes
-          <input type="radio" name="medication" value="No" onclick="hideInput('medication_details')"> No
-        </div>
-        <input type="text" id="medication_details" class="details-input" placeholder="If yes, specify...">
-      </div>
-
-      <div class="question">
-        <label>Do you smoke?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="smoke" value="Yes"> Yes
-          <input type="radio" name="smoke" value="No"> No
-        </div>
-      </div>
-
-      <div class="question">
-        <label>Do you use alcohol?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="alcohol" value="Yes"> Yes
-          <input type="radio" name="alcohol" value="No"> No
-        </div>
-      </div>
-
-      <div class="question">
-        <label>Do you use drugs?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="drugs" value="Yes"> Yes
-          <input type="radio" name="drugs" value="No"> No
-        </div>
-      </div>
-
-      <div class="question">
-        <label>Are you allergic to any of the following? (Local Anesthetics, Latex, Penicillin, Aspirin, Others)</label><br>
-        <div class="radio-group">
-          <input type="radio" name="allergy" value="Yes" onclick="showInput('allergy_details')"> Yes
-          <input type="radio" name="allergy" value="No" onclick="hideInput('allergy_details')"> No
-        </div>
-        <input type="text" id="allergy_details" class="details-input" placeholder="If yes, specify...">
-      </div>
-
-      <h2>For Women Only</h2>
-
-      <div class="question">
-        <label>Are you pregnant?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="pregnant" value="Yes"> Yes
-          <input type="radio" name="pregnant" value="No"> No
-        </div>
-      </div>
-
-      <div class="question">
-        <label>Are you nursing?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="nursing" value="Yes"> Yes
-          <input type="radio" name="nursing" value="No"> No
-        </div>
-      </div>
-
-      <div class="question">
-        <label>Are you taking birth control pills?</label><br>
-        <div class="radio-group">
-          <input type="radio" name="birth_control" value="Yes"> Yes
-          <input type="radio" name="birth_control" value="No"> No
-        </div>
-      </div>
-
     </div>
 
-    <h2>Existing Medical Conditions</h2>
-
-    <div class="condition-list">
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="High Blood Pressure"> High Blood Pressure</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Low Blood Pressure"> Low Blood Pressure</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Epilepsy/Convulsions"> Epilepsy/Convulsions</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="AIDS or HIV Infection"> AIDS or HIV Infection</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Sexually Transmitted Disease"> Sexually Transmitted Disease</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Stomach Ulcers"> Stomach Ulcers</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Fainting/Seizures"> Fainting/Seizures</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Rapid Weight Loss"> Rapid Weight Loss</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Joint Replacement"> Joint Replacement</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Heart Surgery"> Heart Surgery</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Heart Attack"> Heart Attack</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Thyroid Problem"> Thyroid Problem</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Heart Disease"> Heart Disease</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Heart Murmur"> Heart Murmur</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Hepatitis/Liver Disease"> Hepatitis/Liver Disease</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Rheumatic Fever"> Rheumatic Fever</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Hay Fever/Allergies"> Hay Fever/Allergies</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Respiratory Problems"> Respiratory Problems</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Hepatitis/Jaundice"> Hepatitis/Jaundice</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Tuberculosis"> Tuberculosis</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Swollen Ankles"> Swollen Ankles</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Kidney Disease"> Kidney Disease</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Diabetes"> Diabetes</div>
-      <div class="condition-item"><input type="checkbox" name="condition[]" value="Chest Pain"> Chest Pain</div>
-    </div>
-
-    <br><br>
-    <div style="text-align:center;">
-      <button type="submit" style="padding: 10px 20px; font-size: 16px;">Submit</button>
-    </div>
-
-  </form>
-
-</div>
-
-<script>
-function showInput(id) {
-  document.getElementById(id).style.display = 'inline-block';
-}
-function hideInput(id) {
-  const input = document.getElementById(id);
-  input.style.display = 'none';
-  input.value = '';
-}
-</script>
-
+    <script>
+    function showInput(id) {
+        document.getElementById(id).style.display = 'inline-block';
+    }
+    function hideInput(id) {
+        const input = document.getElementById(id);
+        input.style.display = 'none';
+        input.value = '';
+    }
+    
+    // Show relevant detail fields if "Yes" was previously selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const yesRadios = document.querySelectorAll('input[type="radio"][value="Yes"]');
+        yesRadios.forEach(radio => {
+            if (radio.checked) {
+                const detailsId = radio.name.replace('_condition', '_condition_details')
+                                          .replace('_illness', '_illness_details')
+                                          .replace('hospitalized', 'hospitalized_details')
+                                          .replace('medication', 'medication_details')
+                                          .replace('allergy', 'allergy_details');
+                showInput(detailsId);
+            }
+        });
+    });
+    </script>
 </body>
 </html>

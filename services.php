@@ -135,7 +135,7 @@ if (isset($_GET['error'])) {
             <label for="price">Price:</label>
             <input type="number" id="price" name="price" step="0.01" min="0" value="0.00">
             
-            <label for="parent_id">Parent Service (for sub-services):</label>
+            <label for="parent_id">Sub-Service (for sub-services):</label>
             <select id="parent_id" name="parent_id">
                 <option value="">-- None (Main Service) --</option>
                 <?php buildOptions($pdo); ?>

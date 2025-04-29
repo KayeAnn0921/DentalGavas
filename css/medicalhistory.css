@@ -1,0 +1,85 @@
+
+    /* Include all styles inline to test */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+      display: flex;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: #f4f4f4;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .form-container {
+      max-width: 800px;
+      width: 100%;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      border-radius: 8px;
+    }
+    
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+    
+    .question-group {
+      margin-bottom: 20px;
+    }
+    
+    .question {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      font-weight: bold;
+    }
+    
+    .condition-list {
+      columns: 2;
+      -webkit-columns: 2;
+      -moz-columns: 2;
+      margin-top: 10px;
+    }
+    
+    .condition-item {
+      margin-bottom: 8px;
+    }
+    
+    .details-input {
+      margin-top: 5px;
+      margin-left: 10px;
+      padding: 5px;
+      width: 60%;
+      display: none;
+    }
+    
+    .radio-group {
+      margin-top: 5px;
+    }
+    
+    button[type="submit"] {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color:rgb(43, 199, 205);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button[type="submit"]:hover {
+      background-color:rgb(27, 133, 221);
+    }
