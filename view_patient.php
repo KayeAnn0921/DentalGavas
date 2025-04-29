@@ -19,8 +19,21 @@ try {
         header("Location: patient.php");
         exit();
     }
+    
+    // Fetch health questionnaire data
+    $healthStmt = $pdo->prepare("SELECT * FROM health_questionnaire WHERE patient_id = ? LIMIT 1");
+    $healthStmt->execute([$patient_id]);
+    $healthQuestionnaire = $healthStmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Fetch health conditions if questionnaire exists
+    $conditions = [];
+    if ($healthQuestionnaire) {
+        $conditionStmt = $pdo->prepare("SELECT condition_name FROM health_conditions WHERE health_questionnaire_id = ?");
+        $conditionStmt->execute([$healthQuestionnaire['health_questionnaire_id']]);
+        $conditions = $conditionStmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    }
 } catch (PDOException $e) {
-    die("Error fetching patient data: " . $e->getMessage());
+    die("Error fetching data: " . $e->getMessage());
 }
 ?>
 
@@ -102,6 +115,38 @@ try {
             border-radius: 4px;
             margin-bottom: 10px;
             background-color: #f9f9f9;
+        }
+        
+        /* Styles for health questionnaire section */
+        .health-section {
+            grid-column: span 2;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f5f9ff;
+            border-radius: 8px;
+            border: 1px solid #d0e3ff;
+        }
+        
+        .health-section h2 {
+            color: #2c5282;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d0e3ff;
+        }
+        
+        .conditions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .condition-tag {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -249,6 +294,125 @@ try {
                     <span class="detail-label">Reason for Visit:</span>
                     <div class="detail-value"><?= htmlspecialchars($patient['reason_for_visit']) ?></div>
                 </div>
+                
+                <!-- Health Questionnaire Section -->
+                <?php if ($healthQuestionnaire): ?>
+                <div class="health-section">
+                    <h2>HEALTH QUESTIONNAIRE</h2>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Good Health:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['good_health']) ?></div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Under Medical Condition:</span>
+                        <div class="detail-value">
+                            <?= htmlspecialchars($healthQuestionnaire['medical_condition']) ?>
+                            <?php if ($healthQuestionnaire['medical_condition'] === 'Yes' && !empty($healthQuestionnaire['medical_condition_details'])): ?>
+                                <br><small><?= htmlspecialchars($healthQuestionnaire['medical_condition_details']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Serious Illness/Surgery:</span>
+                        <div class="detail-value">
+                            <?= htmlspecialchars($healthQuestionnaire['serious_illness']) ?>
+                            <?php if ($healthQuestionnaire['serious_illness'] === 'Yes' && !empty($healthQuestionnaire['serious_illness_details'])): ?>
+                                <br><small><?= htmlspecialchars($healthQuestionnaire['serious_illness_details']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Hospitalized:</span>
+                        <div class="detail-value">
+                            <?= htmlspecialchars($healthQuestionnaire['hospitalized']) ?>
+                            <?php if ($healthQuestionnaire['hospitalized'] === 'Yes' && !empty($healthQuestionnaire['hospitalized_details'])): ?>
+                                <br><small><?= htmlspecialchars($healthQuestionnaire['hospitalized_details']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Taking Medication:</span>
+                        <div class="detail-value">
+                            <?= htmlspecialchars($healthQuestionnaire['medication']) ?>
+                            <?php if ($healthQuestionnaire['medication'] === 'Yes' && !empty($healthQuestionnaire['medication_details'])): ?>
+                                <br><small><?= htmlspecialchars($healthQuestionnaire['medication_details']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Smokes:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['smoke']) ?></div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Uses Alcohol:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['alcohol']) ?></div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Uses Drugs:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['drugs']) ?></div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Allergies:</span>
+                        <div class="detail-value">
+                            <?= htmlspecialchars($healthQuestionnaire['allergy']) ?>
+                            <?php if ($healthQuestionnaire['allergy'] === 'Yes' && !empty($healthQuestionnaire['allergy_details'])): ?>
+                                <br><small><?= htmlspecialchars($healthQuestionnaire['allergy_details']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <?php if ($patient['sex'] === 'Female'): ?>
+                    <div class="detail-group">
+                        <span class="detail-label">Pregnant:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['pregnant']) ?></div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Nursing:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['nursing']) ?></div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-label">Birth Control Pills:</span>
+                        <div class="detail-value"><?= htmlspecialchars($healthQuestionnaire['birth_control']) ?></div>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($conditions)): ?>
+                    <div class="detail-group full-width">
+                        <span class="detail-label">Existing Medical Conditions:</span>
+                        <div class="detail-value">
+                            <div class="conditions-list">
+                                <?php foreach ($conditions as $condition): ?>
+                                    <span class="condition-tag"><?= htmlspecialchars($condition) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php else: ?>
+                <div class="health-section">
+                    <h2>HEALTH QUESTIONNAIRE</h2>
+                    <div class="detail-value" style="text-align: center; padding: 20px;">
+                        No health questionnaire submitted yet.
+                        <br>
+                        <a href="medicalhistory.php?patient_id=<?= $patient_id ?>" class="back-btn" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> Add Health Questionnaire
+                        </a>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <!-- End of Health Questionnaire Section -->
             </div>
             
             <div style="text-align: center; margin-top: 20px;">

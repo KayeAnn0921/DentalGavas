@@ -1,5 +1,4 @@
 <?php
-// Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -10,8 +9,19 @@ if (!$pdo) {
     die("Could not connect to database. Check your config.php file.");
 }
 
+// Get patient_id from URL if it exists
+$patient_id = isset($_GET['patient_id']) ? $_GET['patient_id'] : null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Collect form data with proper sanitization
+    // Use the patient_id from POST if submitted, otherwise from GET
+    $patient_id = $_POST['patient_id'] ?? $patient_id;  
+    
+    // Validate patient_id exists
+    if (empty($patient_id)) {
+        die("Patient ID is required");
+    }
+
     $good_health = $_POST['good_health'] ?? '';
     $medical_condition = $_POST['medical_condition'] ?? '';
     $medical_condition_details = $_POST['medical_condition_details'] ?? '';
@@ -29,35 +39,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pregnant = $_POST['pregnant'] ?? '';
     $nursing = $_POST['nursing'] ?? '';
     $birth_control = $_POST['birth_control'] ?? '';
-    $condition_list = isset($_POST['condition']) ? implode(", ", $_POST['condition']) : '';
+    $condition_list = isset($_POST['condition']) ? $_POST['condition'] : [];
 
     try {
-        // Prepare SQL statement - REMOVED condition_list from query
+        // First Insert: health_questionnaire
         $sql = "INSERT INTO health_questionnaire 
-                (good_health, medical_condition, medical_condition_details, serious_illness, 
-                serious_illness_details, hospitalized, hospitalized_details, medication, 
-                medication_details, smoke, alcohol, drugs, allergy, allergy_details, 
-                pregnant, nursing, birth_control)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+                (patient_id, good_health, medical_condition, medical_condition_details, serious_illness, 
+                serious_illness_details, hospitalized, hospitalized_details, medication, medication_details, 
+                smoke, alcohol, drugs, allergy, allergy_details, pregnant, nursing, birth_control)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         $stmt = $pdo->prepare($sql);
-        
-        // Execute with parameters - REMOVED condition_list from parameters
-        $result = $stmt->execute([
-            $good_health, $medical_condition, $medical_condition_details,
+        $stmt->execute([
+            $patient_id, $good_health, $medical_condition, $medical_condition_details,
             $serious_illness, $serious_illness_details, $hospitalized, $hospitalized_details,
             $medication, $medication_details, $smoke, $alcohol, $drugs,
             $allergy, $allergy_details, $pregnant, $nursing, $birth_control
         ]);
 
-        if ($result) {
-            // Success - redirect to prevent form resubmission
-            header("Location: ".$_SERVER['PHP_SELF']."?success=1");
-            exit();
-        } else {
-            $errorInfo = $stmt->errorInfo();
-            throw new PDOException("Database error: ".$errorInfo[2]);
-        }
+         // Get the last inserted ID from health_questionnaire
+         $health_questionnaire_id = $pdo->lastInsertId();
+        
+         // Second Insert: health_conditions (only if conditions were selected)
+         if (!empty($condition_list)) {
+             $condition_sql = "INSERT INTO health_conditions (health_questionnaire_id, condition_name) VALUES (?, ?)";
+             $condition_stmt = $pdo->prepare($condition_sql);
+             
+             foreach ($condition_list as $condition) {
+                 $condition_stmt->execute([$health_questionnaire_id, $condition]);
+             }
+         }
+ 
+         // Redirect on success
+         header("Location: ".$_SERVER['PHP_SELF']."?success=1");
+         exit();
     } catch (PDOException $e) {
         $error_message = "Error: " . $e->getMessage();
         error_log($error_message);
@@ -78,11 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </style>
 </head>
 <body>
-    
     <?php include 'sidebar.php'; ?>
     
     <!-- Main content container -->
     <div class="main-content">
+
+
         <div class="form-container">
             <h1>Health Questionnaire</h1>
 
@@ -95,6 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+            <input type="hidden" name="patient_id" value="<?php echo htmlspecialchars($patient_id); ?>">
+                <!-- Form questions (same as before) -->
+
                 <div class="question-group">
                     <div class="question">
                         <label>Are you in good health?</label><br>
