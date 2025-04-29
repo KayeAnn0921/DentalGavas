@@ -202,6 +202,66 @@ try {
     <title>GAVAS DENTAL CLINIC - Patient Information</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/patient.css">
+    <style>
+        /* Add additional styles to fix layout issues */
+        .main {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .main-course {
+            width: 100%;
+        }
+        
+        .patient-list-section {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .course-box {
+            width: 100%;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .pagination a {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+        }
+        
+        .pagination a.active {
+            background-color: #1e88e5;
+            color: white;
+        }
+        
+        /* Style for health questionnaire button */
+        .health-questionnaire-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 
 <body>
@@ -345,10 +405,19 @@ try {
                 <textarea name="reason_for_visit" id="reason_for_visit"><?= htmlspecialchars($edit_mode ? $patient_data['reason_for_visit'] : 
                                                                       ((!$edit_mode && isset($prefill_data['reason'])) ? $prefill_data['reason'] : '')) ?></textarea>
 
-                <button type="submit" name="submit"><?= $edit_mode ? 'Update' : 'Submit' ?></button>
-                <?php if ($edit_mode): ?>
-                    <a href="patient.php" style="text-align:center; display:block; margin-top:10px;">Cancel</a>
-                <?php endif; ?>
+                <div class="btn-container">
+                    <button type="submit" name="submit" class="btn primary-btn">
+                        <?= $edit_mode ? 'Update Patient' : 'Save Patient' ?>
+                    </button>
+                    
+                    <?php if ($edit_mode): ?>
+                        <a href="patient.php" class="btn">Cancel</a>
+                    <?php endif; ?>
+
+                    <?php if ($edit_mode): ?>
+                        <a href="medicalhistory.php?patient_id=<?= $patient_data['patient_id'] ?>" class="health-questionnaire-btn">Health Questionnaire</a>
+                    <?php endif; ?>
+                </div>
             </form>
         </div>
     </section>
@@ -360,7 +429,7 @@ try {
                <input type="text" class="search-box" name="searchInput" placeholder="Search..." value="<?= htmlspecialchars($searchTerm) ?>">
 
                 <button type="submit">Search</button>
-                <?php if (!empty($search)): ?>
+                <?php if (!empty($searchTerm)): ?>
                     <a href="patient.php" class="clear-search">Clear</a>
                 <?php endif; ?>
             </form>
@@ -377,54 +446,55 @@ try {
                     </tr>
                 </thead>
                 <tbody>
-    <?php foreach ($results as $row): 
-        // Get service name if service_id exists
-        $serviceName = '';
-        if (!empty($row['service_id'])) {
-            try {
-                $serviceStmt = $pdo->prepare("SELECT name FROM classification WHERE classification_id = ?");
-                $serviceStmt->execute([$row['service_id']]);
-                $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
-                if ($serviceData) {
-                    $serviceName = ' - ' . $serviceData['name'];
-                }
-            } catch (PDOException $e) {
-                // Silently fail if service can't be loaded
-            }
-        }
-    ?>
-        <tr>
-            <td><?= $row['patient_id'] ?></td>
-            <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?><?= $serviceName ?></td>
-            <td><?= $row['home_address'] ?></td>
-            <td><?= $row['mobile_number'] ?></td>
-            <td class="action-icons">
-                <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
-                <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
-                <a href="patient.php?delete=<?= $row['patient_id'] ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
-            </td>
-        </tr>
-    <?php endforeach; ?>
-</tbody>
+                    <?php foreach ($results as $row): 
+                        // Get service name if service_id exists
+                        $serviceName = '';
+                        if (!empty($row['service_id'])) {
+                            try {
+                                $serviceStmt = $pdo->prepare("SELECT name FROM classification WHERE classification_id = ?");
+                                $serviceStmt->execute([$row['service_id']]);
+                                $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
+                                if ($serviceData) {
+                                    $serviceName = ' - ' . $serviceData['name'];
+                                }
+                            } catch (PDOException $e) {
+                                // Silently fail if service can't be loaded
+                            }
+                        }
+                    ?>
+                    <tr>
+                        <td><?= $row['patient_id'] ?></td>
+                        <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?><?= $serviceName ?></td>
+                        <td><?= $row['home_address'] ?></td>
+                        <td><?= $row['mobile_number'] ?></td>
+                        <td class="action-icons">
+                            <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
+                            <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
+                            <a href="patient.php?delete=<?= $row['patient_id'] ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
+                            <a href="medicalhistory.php?patient_id=<?= $row['patient_id'] ?>" title="Health Questionnaire"><i class="fas fa-file-medical"></i></a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
 
             <!-- Pagination links -->
-<div class="pagination">
-    <?php if ($page > 1): ?>
-        <a href="?page=<?= ($page - 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Previous</a>
-    <?php endif; ?>
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?= ($page - 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Previous</a>
+                <?php endif; ?>
 
-    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <a href="?page=<?= $i ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>" 
-           class="<?= $i == $page ? 'active' : '' ?>">
-            <?= $i ?>
-        </a>
-    <?php endfor; ?>
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="?page=<?= $i ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>" 
+                       class="<?= $i == $page ? 'active' : '' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
 
-    <?php if ($page < $totalPages): ?>
-        <a href="?page=<?= ($page + 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Next</a>
-    <?php endif; ?>
-</div>
-
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?= ($page + 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Next</a>
+                <?php endif; ?>
+            </div>
         </div>
     </section>
 </section>
