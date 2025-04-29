@@ -7,6 +7,39 @@ $result = [];
 $edit_mode = false;
 $patient_data = [];
 
+// Fetch all services for the dropdown
+function buildServiceOptions($pdo, $parent_id = NULL, $prefix = '', $selected_service = null) {
+    $stmt = $pdo->prepare($parent_id === NULL ? 
+        "SELECT classification_id, name, price FROM classification WHERE parent_id IS NULL ORDER BY name" :
+        "SELECT classification_id, name, price FROM classification WHERE parent_id = :parent_id ORDER BY name"
+    );
+    if ($parent_id !== NULL) $stmt->bindParam(':parent_id', $parent_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $options = "";
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $isSelected = ($selected_service == $row['classification_id']) ? 'selected' : '';
+        // Display price if it's greater than zero
+        $priceDisplay = $row['price'] > 0 ? " - ₱" . number_format($row['price'], 2) : "";
+        $options .= "<option value='{$row['classification_id']}' {$isSelected}>{$prefix}{$row['name']}{$priceDisplay}</option>";
+        $options .= buildServiceOptions($pdo, $row['classification_id'], $prefix . "↳ ", $selected_service);
+    }
+    return $options;
+}
+
+// Handle appointment data prefill
+$prefill_data = [];
+if (isset($_GET['appointment_id'])) {
+    $appointment_id = $_GET['appointment_id'];
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM appointments WHERE appointment_id = ?");
+        $stmt->execute([$appointment_id]);
+        $prefill_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "<script>alert('Error loading appointment data: " . addslashes($e->getMessage()) . "');</script>";
+    }
+}
+
 // Handle delete action
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
@@ -37,7 +70,7 @@ if (isset($_GET['edit'])) {
 // Handle form submission
 if (isset($_POST['submit'])) {
     $fields = [
-        'visit_date', 'visit_type', // Moved to the beginning of the array to match form order
+        'visit_date', 'visit_type', 'service_id', // Added service_id field
         'last_name', 'first_name', 'middle_name', 'birthdate', 'age', 
         'sex', 'civil_status', 'mobile_number', 'email_address', 
         'fb_account', 'home_address', 'work_address', 'occupation', 
@@ -48,7 +81,12 @@ if (isset($_POST['submit'])) {
     
     $data = [];
     foreach ($fields as $field) {
-        $data[$field] = $_POST[$field] ?? '';
+        // Special handling for service_id to ensure NULL if empty
+        if ($field === 'service_id' && empty($_POST[$field])) {
+            $data[$field] = null;
+        } else {
+            $data[$field] = $_POST[$field] ?? '';
+        }
     }
 
     if ($edit_mode && isset($_POST['patient_id'])) {
@@ -186,17 +224,36 @@ try {
                 <label for="visit_type">Visit Type:</label>
                 <select name="visit_type" id="visit_type" required>
                     <option value="">Select</option>
-                    <option value="Walk-in" <?= ($edit_mode && $patient_data['visit_type'] == 'Walk-in') ? 'selected' : '' ?>>Walk-in</option>
-                    <option value="Appointment" <?= ($edit_mode && $patient_data['visit_type'] == 'Appointment') ? 'selected' : '' ?>>Appointment</option>
+                    <option value="Walk-in" <?= ($edit_mode && $patient_data['visit_type'] == 'Walk-in') ? 'selected' : 
+                                              ((!$edit_mode && isset($prefill_data['type_of_visit']) && $prefill_data['type_of_visit'] == 'Walk-in') ? 'selected' : '') ?>>Walk-in</option>
+                    <option value="Appointment" <?= ($edit_mode && $patient_data['visit_type'] == 'Appointment') ? 'selected' : 
+                                                ((!$edit_mode && isset($prefill_data['type_of_visit']) && $prefill_data['type_of_visit'] == 'Appointment') ? 'selected' : '') ?>>Appointment</option>
+                </select>
+
+                <!-- Service dropdown with prices -->
+                <label for="service_id">Service:</label>
+                <select name="service_id" id="service_id">
+                    <option value="">-- Select Service --</option>
+                    <?php 
+                    try {
+                        $selectedService = $edit_mode ? $patient_data['service_id'] : 
+                                          (isset($prefill_data['service_id']) ? $prefill_data['service_id'] : '');
+                        echo buildServiceOptions($pdo, NULL, '', $selectedService);
+                    } catch (PDOException $e) {
+                        echo "<option value=''>Error loading services: " . htmlspecialchars($e->getMessage()) . "</option>";
+                    }
+                    ?>
                 </select>
 
                 <label for="last_name">Last Name:</label>
                 <input type="text" name="last_name" id="last_name" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['last_name'] : '') ?>">
+                       value="<?= htmlspecialchars($edit_mode ? $patient_data['last_name'] : 
+                                                ((!$edit_mode && isset($prefill_data['last_name'])) ? $prefill_data['last_name'] : '')) ?>">
 
                 <label for="first_name">First Name:</label>
                 <input type="text" name="first_name" id="first_name" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['first_name'] : '') ?>">
+                       value="<?= htmlspecialchars($edit_mode ? $patient_data['first_name'] : 
+                                                ((!$edit_mode && isset($prefill_data['first_name'])) ? $prefill_data['first_name'] : '')) ?>">
 
                 <label for="middle_name">Middle Name:</label>
                 <input type="text" name="middle_name" id="middle_name" 
@@ -228,18 +285,21 @@ try {
 
                 <label for="mobile_number">Mobile Number:</label>
                 <input type="text" name="mobile_number" id="mobile_number" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['mobile_number'] : '') ?>">
+                       value="<?= htmlspecialchars($edit_mode ? $patient_data['mobile_number'] : 
+                                                ((!$edit_mode && isset($prefill_data['contact_number'])) ? $prefill_data['contact_number'] : '')) ?>">
 
                 <label for="email_address">Email Address:</label>
                 <input type="email" name="email_address" id="email_address" 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['email_address'] : '') ?>">
+                       value="<?= htmlspecialchars($edit_mode ? $patient_data['email_address'] : 
+                                                ((!$edit_mode && isset($prefill_data['email'])) ? $prefill_data['email'] : '')) ?>">
 
                 <label for="fb_account">Facebook Account:</label>
                 <input type="text" name="fb_account" id="fb_account" 
                        value="<?= htmlspecialchars($edit_mode ? $patient_data['fb_account'] : '') ?>">
 
                 <label for="home_address">Home Address:</label>
-                <textarea name="home_address" id="home_address" required><?= htmlspecialchars($edit_mode ? $patient_data['home_address'] : '') ?></textarea>
+                <textarea name="home_address" id="home_address" required><?= htmlspecialchars($edit_mode ? $patient_data['home_address'] : 
+                                                                        ((!$edit_mode && isset($prefill_data['address'])) ? $prefill_data['address'] : '')) ?></textarea>
 
                 <label for="work_address">Work Address:</label>
                 <textarea name="work_address" id="work_address"><?= htmlspecialchars($edit_mode ? $patient_data['work_address'] : '') ?></textarea>
@@ -282,7 +342,8 @@ try {
                        value="<?= htmlspecialchars($edit_mode ? $patient_data['last_dental_visit'] : '') ?>">
 
                 <label for="reason_for_visit">Reason for Visit:</label>
-                <textarea name="reason_for_visit" id="reason_for_visit"><?= htmlspecialchars($edit_mode ? $patient_data['reason_for_visit'] : '') ?></textarea>
+                <textarea name="reason_for_visit" id="reason_for_visit"><?= htmlspecialchars($edit_mode ? $patient_data['reason_for_visit'] : 
+                                                                      ((!$edit_mode && isset($prefill_data['reason'])) ? $prefill_data['reason'] : '')) ?></textarea>
 
                 <button type="submit" name="submit"><?= $edit_mode ? 'Update' : 'Submit' ?></button>
                 <?php if ($edit_mode): ?>
@@ -316,10 +377,25 @@ try {
                     </tr>
                 </thead>
                 <tbody>
-    <?php foreach ($results as $row): ?>
+    <?php foreach ($results as $row): 
+        // Get service name if service_id exists
+        $serviceName = '';
+        if (!empty($row['service_id'])) {
+            try {
+                $serviceStmt = $pdo->prepare("SELECT name FROM classification WHERE classification_id = ?");
+                $serviceStmt->execute([$row['service_id']]);
+                $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
+                if ($serviceData) {
+                    $serviceName = ' - ' . $serviceData['name'];
+                }
+            } catch (PDOException $e) {
+                // Silently fail if service can't be loaded
+            }
+        }
+    ?>
         <tr>
             <td><?= $row['patient_id'] ?></td>
-            <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?></td>
+            <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?><?= $serviceName ?></td>
             <td><?= $row['home_address'] ?></td>
             <td><?= $row['mobile_number'] ?></td>
             <td class="action-icons">
@@ -349,8 +425,6 @@ try {
     <?php endif; ?>
 </div>
 
-
-
         </div>
     </section>
 </section>
@@ -375,6 +449,11 @@ function calculateAge() {
 document.addEventListener('DOMContentLoaded', function() {
     if (!document.querySelector('input[name="patient_id"]')) {
         document.getElementById('visit_date').value = new Date().toISOString().split('T')[0];
+    }
+    
+    // Trigger age calculation if birthdate is already filled
+    if (document.getElementById('birthdate').value) {
+        calculateAge();
     }
 });
 </script>

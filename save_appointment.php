@@ -5,6 +5,10 @@ include 'config.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Replace this with how you get the actual patient ID
     $patient_id = 1; // Example: from session or login
+
+    // Get form data
+    $first_name = $_POST['first_name'];
+    $last_name = $_POST['last_name'];
     $type_of_visit = $_POST['visitType'];
     $appointment_date = $_POST['appointmentDate'];
     $appointment_time = $_POST['appointmentTime'];
@@ -12,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $classification_id = $_POST['classification_id'];
     $status = 'pending'; // Default status
     
-    // Debug: Check if the classification_id exists in the services table
+    // Check if the classification_id exists
     $check_stmt = $pdo->prepare("SELECT classification_id FROM classification WHERE classification_id = :classification_id");
     $check_stmt->execute([':classification_id' => $classification_id]);
     
@@ -22,19 +26,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     try {
-        // Prepare the insert statement
+        // Prepare the insert statement (NOW including first_name and last_name)
         $stmt = $pdo->prepare("
             INSERT INTO appointments (
-                patient_id, type_of_visit, appointment_date, appointment_time, 
-                contact_number, classification_id, status
+                first_name, last_name, patient_id, type_of_visit, 
+                appointment_date, appointment_time, contact_number, 
+                classification_id, status
             ) VALUES (
-                :patient_id, :type_of_visit, :appointment_date, :appointment_time, 
-                :contact_number, :classification_id, :status
+                :first_name, :last_name, :patient_id, :type_of_visit, 
+                :appointment_date, :appointment_time, :contact_number, 
+                :classification_id, :status
             )
         ");
 
         // Execute with bound parameters
         $stmt->execute([
+            ':first_name' => $first_name,
+            ':last_name' => $last_name,
             ':patient_id' => $patient_id,
             ':type_of_visit' => $type_of_visit,
             ':appointment_date' => $appointment_date,
@@ -44,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':status' => $status
         ]);
 
+        // Success message and redirect
         echo "<script>
             alert('Appointment successfully saved!');
             window.location.href = 'schedule.php';
