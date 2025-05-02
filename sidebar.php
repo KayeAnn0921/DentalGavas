@@ -60,7 +60,7 @@
                   <i class="fas fa-chevron-down arrow"></i>
               </a>
               <ul class="dropdown">
-                  <li><a href="cashier.php">Cashiering</a></li>
+                  <li><a href="cashiering.php">Cashiering</a></li>
                   <li><a href="billing.php">Billing</a></li>
               </ul>
           </li>
