@@ -1,19 +1,38 @@
 <?php
+include 'config.php'; // Include the database configuration
+
 $patient_id = $_GET['id'] ?? null;
 
-// Dummy data – you should pull this from your database based on `$patient_id`
-$patient = [
-  "name" => "Mary Smith",
-  "age" => "35",
-  "gender" => "Female",
-  "address" => "123 Broad Street"
-];
+if (!$patient_id) {
+    die("Patient ID is required.");
+}
 
-// Dummy prescription array – replace with database query
-$prescriptions = [
-  ["medicine" => "Lipitor 10 mg", "sig" => "tab i every day", "quantity" => "30", "refill" => "6"],
-  // add more if needed
-];
+// Fetch patient details
+try {
+  $stmt = $pdo->prepare("SELECT first_name, last_name, home_address, 
+                                FLOOR(DATEDIFF(CURDATE(), birthdate) / 365) AS age 
+                         FROM patients WHERE patient_id = ?");
+  $stmt->execute([$patient_id]);
+  $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+  
+  if (!$patient) {
+      die("Patient not found.");
+  }
+} catch (PDOException $e) {
+  die("Error fetching patient details: " . $e->getMessage());
+}
+
+// Fetch prescriptions for the patient
+try {
+    $stmt = $pdo->prepare("SELECT medications.name AS medicine, prescription.sig, prescription.quantity 
+                           FROM prescription
+                           JOIN medications ON prescription.med_id = medications.id 
+                           WHERE prescription.patient_id = ?");
+    $stmt->execute([$patient_id]);
+    $prescriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Error fetching prescriptions: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,6 +90,11 @@ $prescriptions = [
     .print-btn {
       margin-top: 30px;
     }
+    @media print {
+      .back-btn, .print-btn {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -83,19 +107,23 @@ $prescriptions = [
     Phone: (083) 123-4567
   </div>
 
-  <div class="field"><strong>Name:</strong> <?= htmlspecialchars($patient["name"]) ?></div>
+  <div class="field"><strong>Name:</strong> <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></div>
+  <div class="field"><strong>Age:</strong> <?= htmlspecialchars($patient['age'])?></div>
   <div class="field"><strong>Date:</strong> <?= date("M d, Y") ?></div>
-  <div class="field"><strong>Address:</strong> <?= htmlspecialchars($patient["address"]) ?></div>
+  <div class="field"><strong>Address:</strong> <?= htmlspecialchars($patient['home_address']) ?></div>
 
   <div class="rx-content">
     <div class="rx-symbol">℞</div>
-    <?php foreach ($prescriptions as $rx): ?>
-      <div class="field"><strong>Drug:</strong> <?= htmlspecialchars($rx["medicine"]) ?></div>
-      <div class="field"><strong>Tabs No.:</strong> <?= htmlspecialchars($rx["quantity"]) ?></div>
-      <div class="field"><strong>Sig:</strong> <?= htmlspecialchars($rx["sig"]) ?></div>
-      <div class="field"><strong>Refill:</strong> <?= htmlspecialchars($rx["refill"]) ?> times</div>
-      <hr>
-    <?php endforeach; ?>
+    <?php if (!empty($prescriptions)): ?>
+      <?php foreach ($prescriptions as $rx): ?>
+        <div class="field"><strong>Drug:</strong> <?= htmlspecialchars($rx["medicine"]) ?></div>
+        <div class="field"><strong>Tabs No.:</strong> <?= htmlspecialchars($rx["quantity"] ?? 'N/A') ?></div>
+        <div class="field"><strong>Sig:</strong> <?= htmlspecialchars($rx["sig"]) ?></div>
+        <hr>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <div class="field">No prescriptions found for this patient.</div>
+    <?php endif; ?>
   </div>
 
   <div class="label-group">

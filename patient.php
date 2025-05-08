@@ -7,26 +7,33 @@ $result = [];
 $edit_mode = false;
 $patient_data = [];
 
-// Fetch all services for the dropdown
-function buildServiceOptions($pdo, $parent_id = NULL, $prefix = '', $selected_service = null) {
-    $stmt = $pdo->prepare($parent_id === NULL ? 
-        "SELECT classification_id, name, price FROM classification WHERE parent_id IS NULL ORDER BY name" :
-        "SELECT classification_id, name, price FROM classification WHERE parent_id = :parent_id ORDER BY name"
-    );
-    if ($parent_id !== NULL) $stmt->bindParam(':parent_id', $parent_id, PDO::PARAM_INT);
+function buildServiceCheckboxes($pdo, $parentId = null, $prefix = '', $selectedServices = []) {
+    $query = $parentId === null 
+        ? "SELECT service_id, name, price FROM services WHERE parent_id IS NULL ORDER BY name" 
+        : "SELECT service_id, name, price FROM services WHERE parent_id = :parent_id ORDER BY name";
+
+    $stmt = $pdo->prepare($query);
+    if ($parentId !== null) {
+        $stmt->bindParam(':parent_id', $parentId, PDO::PARAM_INT);
+    }
     $stmt->execute();
 
-    $options = "";
+    $checkboxes = '';
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $isSelected = ($selected_service == $row['classification_id']) ? 'selected' : '';
-        // Display price if it's greater than zero
-        $priceDisplay = $row['price'] > 0 ? " - ₱" . number_format($row['price'], 2) : "";
-        $options .= "<option value='{$row['classification_id']}' {$isSelected}>{$prefix}{$row['name']}{$priceDisplay}</option>";
-        $options .= buildServiceOptions($pdo, $row['classification_id'], $prefix . "↳ ", $selected_service);
-    }
-    return $options;
-}
+        $isChecked = in_array($row['service_id'], $selectedServices) ? 'checked' : '';
+        $priceDisplay = $row['price'] > 0 ? " - ₱" . number_format($row['price'], 2) : '';
+        $checkboxes .= "<li>
+                            <label>
+                                <input type='checkbox' name='services[]' value='{$row['service_id']}' data-price='{$row['price']}' {$isChecked} onchange='updateTotalPrice()'>
+                                {$prefix}{$row['name']} <span class='price'>{$priceDisplay}</span>
+                            </label>
+                        </li>";
 
+        $checkboxes .= buildServiceCheckboxes($pdo, $row['service_id'], $prefix . "<span class='child'>↳</span> ", $selectedServices);
+    }
+
+    return $checkboxes;
+}
 // Handle appointment data prefill
 $prefill_data = [];
 if (isset($_GET['appointment_id'])) {
@@ -70,54 +77,60 @@ if (isset($_GET['edit'])) {
 // Handle form submission
 if (isset($_POST['submit'])) {
     $fields = [
-        'visit_date', 'visit_type', 'service_id', // Added service_id field
-        'last_name', 'first_name', 'middle_name', 'birthdate', 'age', 
-        'sex', 'civil_status', 'mobile_number', 'email_address', 
+        'visit_date', 'visit_type', 'last_name', 'first_name', 'middle_name', 
+        'birthdate', 'age', 'sex', 'civil_status', 'mobile_number', 'email_address', 
         'fb_account', 'home_address', 'work_address', 'occupation', 
         'office_contact_number', 'parent_guardian_name', 'physician_name', 
         'physician_address', 'previous_dentists', 'treatment_done', 
         'referred_by', 'last_dental_visit', 'reason_for_visit'
     ];
-    
+
     $data = [];
     foreach ($fields as $field) {
-        // Special handling for service_id to ensure NULL if empty
-        if ($field === 'service_id' && empty($_POST[$field])) {
-            $data[$field] = null;
-        } else {
-            $data[$field] = $_POST[$field] ?? '';
-        }
+        $data[$field] = $_POST[$field] ?? '';
     }
+
+    // Handle selected services
+    $selectedServices = isset($_POST['services']) ? $_POST['services'] : [];
 
     if ($edit_mode && isset($_POST['patient_id'])) {
         try {
-            $sql = "UPDATE patients SET ";
-            $sql .= implode(" = ?, ", $fields) . " = ? ";
-            $sql .= "WHERE patient_id = ?";
-            
+            // Update patient data
+            $sql = "UPDATE patients SET " . implode(" = ?, ", $fields) . " = ? WHERE patient_id = ?";
             $stmt = $pdo->prepare($sql);
             $params = array_values($data);
             $params[] = $_POST['patient_id'];
-            
-            if ($stmt->execute($params)) {
-                echo "<script>alert('Patient data updated successfully!'); window.location.href='patient.php';</script>";
-            } else {
-                echo "<script>alert('Error updating record: " . addslashes($stmt->errorInfo()[2]) . "');</script>";
+            $stmt->execute($params);
+
+            // Clear existing services for the patient
+            $stmt = $pdo->prepare("DELETE FROM patient_services WHERE patient_id = ?");
+            $stmt->execute([$_POST['patient_id']]);
+
+            // Insert selected services
+            $stmt = $pdo->prepare("INSERT INTO patient_services (patient_id, service_id) VALUES (?, ?)");
+            foreach ($selectedServices as $service_id) {
+                $stmt->execute([$_POST['patient_id'], $service_id]);
             }
+
+            echo "<script>alert('Patient data updated successfully!'); window.location.href='patient.php';</script>";
         } catch (PDOException $e) {
             echo "<script>alert('Error updating record: " . addslashes($e->getMessage()) . "');</script>";
         }
     } else {
         try {
-            $sql = "INSERT INTO patients (" . implode(", ", $fields) . ") ";
-            $sql .= "VALUES (" . str_repeat("?, ", count($fields) - 1) . "?)";
-            
+            // Insert new patient data
+            $sql = "INSERT INTO patients (" . implode(", ", $fields) . ") VALUES (" . str_repeat("?, ", count($fields) - 1) . "?)";
             $stmt = $pdo->prepare($sql);
-            if ($stmt->execute(array_values($data))) {
-                echo "<script>alert('Patient data submitted successfully!'); window.location.href='patient.php';</script>";
-            } else {
-                echo "<script>alert('Error submitting data: " . addslashes($stmt->errorInfo()[2]) . "');</script>";
+            $stmt->execute(array_values($data));
+            $patient_id = $pdo->lastInsertId();
+
+            // Insert selected services
+            $stmt = $pdo->prepare("INSERT INTO patient_services (patient_id, service_id) VALUES (?, ?)");
+            foreach ($selectedServices as $service_id) {
+                $stmt->execute([$patient_id, $service_id]);
             }
+
+            echo "<script>alert('Patient data submitted successfully!'); window.location.href='patient.php';</script>";
         } catch (PDOException $e) {
             echo "<script>alert('Error submitting data: " . addslashes($e->getMessage()) . "');</script>";
         }
@@ -193,6 +206,7 @@ try {
     $results = [];
 }
 
+
 ?>
 
 <!DOCTYPE html>
@@ -261,6 +275,8 @@ try {
             cursor: pointer;
             border-radius: 4px;
         }
+      
+
     </style>
 </head>
 
@@ -290,21 +306,18 @@ try {
                                                 ((!$edit_mode && isset($prefill_data['type_of_visit']) && $prefill_data['type_of_visit'] == 'Appointment') ? 'selected' : '') ?>>Appointment</option>
                 </select>
 
-                <!-- Service dropdown with prices -->
-                <label for="service_id">Service:</label>
-                <select name="service_id" id="service_id">
-                    <option value="">-- Select Service --</option>
-                    <?php 
-                    try {
-                        $selectedService = $edit_mode ? $patient_data['service_id'] : 
-                                          (isset($prefill_data['service_id']) ? $prefill_data['service_id'] : '');
-                        echo buildServiceOptions($pdo, NULL, '', $selectedService);
-                    } catch (PDOException $e) {
-                        echo "<option value=''>Error loading services: " . htmlspecialchars($e->getMessage()) . "</option>";
-                    }
-                    ?>
-                </select>
-
+<!-- Service selection with checkboxes -->
+<label for="services">Services:</label>
+<div id="services-container">
+    <?php 
+    try {
+        $selectedServices = $edit_mode ? explode(',', $patient_data['services'] ?? '') : [];
+        echo buildServiceCheckboxes($pdo, NULL, '', $selectedServices);
+    } catch (PDOException $e) {
+        echo "<div>Error loading services: " . htmlspecialchars($e->getMessage()) . "</div>";
+    }
+    ?>
+</div>
                 <label for="last_name">Last Name:</label>
                 <input type="text" name="last_name" id="last_name" required 
                        value="<?= htmlspecialchars($edit_mode ? $patient_data['last_name'] : 
@@ -442,39 +455,32 @@ try {
                         <th>Patient Name</th>
                         <th>Address</th>
                         <th>Contact</th>
+                        <th>Service</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($results as $row): 
-                        // Get service name if service_id exists
-                        $serviceName = '';
-                        if (!empty($row['service_id'])) {
-                            try {
-                                $serviceStmt = $pdo->prepare("SELECT name FROM classification WHERE classification_id = ?");
-                                $serviceStmt->execute([$row['service_id']]);
-                                $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
-                                if ($serviceData) {
-                                    $serviceName = ' - ' . $serviceData['name'];
-                                }
-                            } catch (PDOException $e) {
-                                // Silently fail if service can't be loaded
-                            }
-                        }
-                    ?>
-                    <tr>
-                        <td><?= $row['patient_id'] ?></td>
-                        <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?><?= $serviceName ?></td>
-                        <td><?= $row['home_address'] ?></td>
-                        <td><?= $row['mobile_number'] ?></td>
-                        <td class="action-icons">
-                            <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
-                            <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
-                            <a href="patient.php?delete=<?= $row['patient_id'] ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
-                            <a href="medicalhistory.php?patient_id=<?= $row['patient_id'] ?>" title="Health Questionnaire"><i class="fas fa-file-medical"></i></a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+                <?php foreach ($results as $row): 
+    // Fetch associated services
+    $stmt = $pdo->prepare("SELECT s.name FROM patient_services ps JOIN services s ON ps.service_id = s.service_id WHERE ps.patient_id = ?");
+    $stmt->execute([$row['patient_id']]);
+    $services = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $serviceNames = implode(', ', $services);
+?>
+<tr>
+    <td><?= $row['patient_id'] ?></td>
+    <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?></td>
+    <td><?= $row['home_address'] ?></td>
+    <td><?= $row['mobile_number'] ?></td>
+    <td><?= htmlspecialchars($serviceNames) ?></td>
+    <td class="action-icons">
+        <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
+        <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
+        <a href="patient.php?delete=<?= $row['patient_id'] ?>" onclick="return confirm('Are you sure you want to delete this patient?')" title="Delete"><i class="fas fa-trash"></i></a>
+        <a href="medicalhistory.php?patient_id=<?= $row['patient_id'] ?>" title="Health Questionnaire"><i class="fas fa-file-medical"></i></a>
+    </td>
+</tr>
+<?php endforeach; ?>
                 </tbody>
             </table>
 
@@ -527,5 +533,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<script>
+function updateTotalPrice() {
+    const checkboxes = document.querySelectorAll('input[name="services[]"]:checked');
+    let total = 0;
+    checkboxes.forEach(checkbox => {
+        total += parseFloat(checkbox.getAttribute('data-price')) || 0;
+    });
+    document.getElementById('total-price').textContent = `₱${total.toFixed(2)}`;
+}
+
+// Initialize total price on page load
+document.addEventListener('DOMContentLoaded', updateTotalPrice);
+</script>
+<!-- Display total price -->
+<div>
+    <label>Total Price:</label>
+    <span id="total-price">₱0.00</span>
+</div>
+
 </body>
 </html>

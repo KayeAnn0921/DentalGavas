@@ -15,13 +15,18 @@ body {
     height: 100vh;
     background: #ffffff;
     padding: 20px;
-    position: fixed;
+    position: fixed; /* Ensures the sidebar stays in place */
+    top: 0;
+    left: 0;
     overflow-y: auto;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Ensures the sidebar is above other elements */
 }
+
 .dropdown-toggle i {
     margin-right: 8px; 
 }
+
 .sidebar ul {
     list-style: none;
     padding: 0;
@@ -60,7 +65,7 @@ body {
     background: #ffffff;
     border-radius: 5px;
     padding: 5px 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border: 1px solid #e0e0e0;
 }
 
@@ -114,4 +119,11 @@ body {
     text-decoration: none;
     border-radius: 5px;
     margin-top: 20px;
+}
+
+.main-content {
+    margin-left: 250px; /* Adjust this to match the sidebar width */
+    padding: 20px;
+    position: relative;
+    z-index: 1; /* Ensures the main content is below the sidebar */
 }

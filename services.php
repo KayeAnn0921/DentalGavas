@@ -1,156 +1,131 @@
-<?php 
-include 'config.php';
+<?php
+ob_start(); // Start output buffering
+include 'sidebar.php'; 
+include 'config.php'; // Ensure database connection is included
 
 $message = "";
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name']);
-    $price = isset($_POST['price']) ? floatval($_POST['price']) : 0.00;
-    $parent_id = isset($_POST['parent_id']) && $_POST['parent_id'] !== "" ? intval($_POST['parent_id']) : NULL;
+    $category_id = isset($_POST['category_id']) ? intval($_POST['category_id']) : null;
+    $subservices = isset($_POST['subservices']) ? $_POST['subservices'] : [];
 
-    if (empty($name)) {
-        $message = "Service name is required!";
+    if (empty($category_id)) {
+        $message = "Category is required!";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO classification (name, price, parent_id) VALUES (:name, :price, :parent_id)");
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':price', $price);
-            $stmt->bindParam(':parent_id', $parent_id, PDO::PARAM_INT);
-            $stmt->execute();
+            $pdo->beginTransaction();
 
+            // Insert sub-services for the selected category
+            $stmt = $pdo->prepare("INSERT INTO services (name, price, category_id, parent_id) VALUES (:name, :price, :category_id, :parent_id)");
+            foreach ($subservices as $subservice) {
+                if (!empty($subservice['name'])) {
+                    $name = $subservice['name'];
+                    $price = isset($subservice['price']) ? floatval($subservice['price']) : 0.00;
+                    $parent_id = !empty($subservice['parent_id']) ? intval($subservice['parent_id']) : null;
+            
+                    $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+                    $stmt->bindValue(':price', $price, PDO::PARAM_STR); // Or PDO::PARAM_INT if integer only
+                    $stmt->bindValue(':category_id', $category_id, PDO::PARAM_INT);
+                    $stmt->bindValue(':parent_id', $parent_id, PDO::PARAM_INT);
+            
+                    $stmt->execute();
+                }
+            }
+
+            $pdo->commit();
             header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
             exit();
         } catch (PDOException $e) {
+            $pdo->rollBack();
             $message = "Error: " . $e->getMessage();
         }
     }
 }
 
 if (isset($_GET['success'])) {
-    $message = "Service added successfully!";
+    $message = "Sub-services added successfully!";
 }
 
-function buildOptions($pdo, $parent_id = NULL, $prefix = '') {
-    $stmt = $pdo->prepare($parent_id === NULL ? 
-        "SELECT classification_id, name FROM classification WHERE parent_id IS NULL ORDER BY name" :
-        "SELECT classification_id, name FROM classification WHERE parent_id = :parent_id ORDER BY name"
-    );
-    if ($parent_id !== NULL) $stmt->bindParam(':parent_id', $parent_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        echo "<option value='{$row['classification_id']}'>{$prefix}{$row['name']}</option>";
-        buildOptions($pdo, $row['classification_id'], $prefix . "↳ ");
-    }
+// Fetch categories for the dropdown
+$categories = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM category");
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $message = "Error fetching categories: " . $e->getMessage();
 }
 
-function displayClassifications($pdo, $parent_id = null, $indent = 0) {
-    global $search;
-    
-    $query = "SELECT * FROM classification WHERE ";
-    $query .= $parent_id === null ? "parent_id IS NULL" : "parent_id = :parent_id";
-    
-    if (!empty($search)) {
-        $query .= " AND name LIKE :search";
-    }
-    
-    $query .= " ORDER BY name";
-    
-    $stmt = $pdo->prepare($query);
-    if ($parent_id !== null) $stmt->bindParam(':parent_id', $parent_id, PDO::PARAM_INT);
-    if (!empty($search)) $stmt->bindValue(':search', "%$search%", PDO::PARAM_STR);
-    
-    $stmt->execute();
-    
-    while ($classification = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $padding = 10 + ($indent * 20);
-        $indicator = str_repeat('↳ ', $indent);
-        $rowClass = $indent === 0 ? 'main-service' : 'sub-service';
-        
-        echo "<tr class='{$rowClass}'>";
-        echo "<td style='padding-left: {$padding}px;'>{$indicator}" . htmlspecialchars($classification['name']) . "</td>";
-        
-        // Modified line: Only display price if it's not zero
-        if ($classification['price'] > 0) {
-            echo "<td>₱" . number_format($classification['price'], 2) . "</td>";
-        } else {
-            echo "<td></td>"; // Empty cell when price is zero
-        }
-        
-        echo "<td class='actions'>";
-        echo "<a href='edit_classification.php?id={$classification['classification_id']}' class='edit-btn'><i class='fa fa-pencil'></i> </a>";
-        echo "<a href='delete_classification.php?id={$classification['classification_id']}' class='delete-btn' onclick='return confirm(\"Are you sure?\")'><i class='fa fa-trash'></i> </a>";
-        echo "</td>";
-        echo "</tr>";
-        
-        displayClassifications($pdo, $classification['classification_id'], $indent + 1);
-    }
-}
-
-// Add these lines after your existing $message initialization at the beginning of the file
-if (isset($_GET['updated'])) {
-    $message = "Service updated successfully!";
-}
-if (isset($_GET['deleted'])) {
-    $message = "Service deleted successfully!";
-}
-if (isset($_GET['error'])) {
-    if ($_GET['error'] === 'haschildren') {
-        $message = "Cannot delete a service that has sub-services. Delete the sub-services first.";
-    } else if ($_GET['error'] === 'noid') {
-        $message = "No service ID provided.";
-    } else if ($_GET['error'] === 'notfound') {
-        $message = "Service not found.";
-    } else {
-        $message = "Error: " . htmlspecialchars($_GET['error']);
-    }
+// Fetch all services for parent selection
+$services = [];
+try {
+    $stmt = $pdo->query("SELECT service_id, name FROM services");
+    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $message = "Error fetching services: " . $e->getMessage();
 }
 ?>
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>GAVAS DENTAL CLINIC - Services</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
     <link rel="stylesheet" href="css/services.css"/>
+    <script>
+        function addSubServiceRow() {
+            const container = document.getElementById('subservices-container');
+            const row = document.createElement('div');
+            row.classList.add('subservice-row');
+            row.innerHTML = `
+    <input type="text" name="subservices[${Date.now()}][name]" placeholder="Sub-Service Name" required>
+    <input type="number" name="subservices[${Date.now()}][price]" placeholder="Price" step="0.01" min="0" required>
+    <select name="subservices[${Date.now()}][parent_id]">
+        <option value="">No Parent</option>
+        <?php foreach ($services as $service): ?>
+            <option value="<?= htmlspecialchars($service['service_id']) ?>"><?= htmlspecialchars($service['name']) ?></option>
+        <?php endforeach; ?>
+    </select>
+    <button type="button" onclick="removeSubServiceRow(this)">Remove</button>
+`;
+            container.appendChild(row);
+        }
+
+        function removeSubServiceRow(button) {
+            button.parentElement.remove();
+        }
+    </script>
 </head>
 <body>
-<?php include 'sidebar.php'; ?>
-
 <div class="main-content">
-   
-
     <div class="form-container">
-        <h2>Add New Service</h2>
+        <h2>Services</h2>
         <?php if ($message): ?>
             <div class="message <?php echo isset($_GET['success']) ? 'success' : 'error'; ?>"><?= $message ?></div>
         <?php endif; ?>
         
         <form method="POST" action="">
-            <label for="name">Service Name:</label>
-            <input type="text" id="name" name="name" required>
-            
-            <label for="price">Price:</label>
-            <input type="number" id="price" name="price" step="0.01" min="0" value="0.00">
-            
-            <label for="parent_id">Sub-Service (for sub-services):</label>
-            <select id="parent_id" name="parent_id">
-                <option value="">-- None (Main Service) --</option>
-                <?php buildOptions($pdo); ?>
+            <label for="category_id">Category:</label>
+            <select id="category_id" name="category_id" required>
+                <option value="">Select a category</option>
+                <?php foreach ($categories as $category): ?>
+                    <option value="<?= htmlspecialchars($category['category_id']) ?>"><?= htmlspecialchars($category['name']) ?></option>
+                <?php endforeach; ?>
             </select>
+
+            <label>Sub-Services:</label>
+            <div id="subservices-container"></div>
+            <button type="button" onclick="addSubServiceRow()">Add Sub-Service</button>
             
-            <button type="submit">Add Service</button>
+            <button type="submit">Add Services</button>
         </form>
     </div>
 
     <div class="classification-container">
-        <h2>Services List</h2>
+        <h2>Sub-Services List</h2>
         
         <div class="search-container">
             <form method="GET" action="">
-                <input type="text" name="search" placeholder="Search classification..." value="<?= htmlspecialchars($search) ?>">
+                <input type="text" name="search" placeholder="Search sub-service..." value="<?= htmlspecialchars($search) ?>">
                 <button type="submit"><i class="fas fa-search"></i> Search</button>
             </form>
         </div>
@@ -158,28 +133,39 @@ if (isset($_GET['error'])) {
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Service Name</th>
+                    <th>Sub Service</th>
                     <th>Price</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
                 try {
-                    $hasRecords = $pdo->query("SELECT COUNT(*) FROM classification")->fetchColumn() > 0;
-                    if ($hasRecords) {
-                        displayClassifications($pdo);
+                    $stmt = $pdo->query("SELECT c.name AS category_name, s.name AS service_name, p.name AS parent_name, s.price 
+                                         FROM services s 
+                                         LEFT JOIN services p ON s.parent_id = p.service_id
+                                         JOIN category c ON s.category_id = c.category_id");
+                    if ($stmt->rowCount() > 0) {
+                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($row['category_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['service_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['parent_name'] ?? 'None') . "</td>";
+                            echo "<td>" . htmlspecialchars($row['price']) . "</td>";
+                            echo "</tr>";
+                        }
                     } else {
-                        echo '<tr><td colspan="3" class="no-records">No services found. Add your first service above.</td></tr>';
+                        echo '<tr><td colspan="4" class="no-records">No sub-services found. Add your first sub-service above.</td></tr>';
                     }
                 } catch (PDOException $e) {
-                    echo '<tr><td colspan="3" class="no-records">Error loading services: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
+                    echo '<tr><td colspan="4" class="no-records">Error loading sub-services: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
                 }
                 ?>
             </tbody>
         </table>
     </div>
 </div>
-
 </body>
 </html>
+<?php ob_end_flush(); // End output buffering ?>
