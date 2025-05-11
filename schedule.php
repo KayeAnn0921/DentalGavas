@@ -71,23 +71,23 @@
         </div>
 
         <div class="form-group">
-          <label for="classification_id">Service:</label>
-          <select id="classification_id" name="classification_id" required>
+          <label for="service_id">Service:</label>
+          <select id="service_id" name="service_id" required>
             <option value="">-- Select a Service --</option>
 
             <?php
             try {
                 // Prepare and execute the query to get all classifications
-                $stmt = $pdo->prepare("SELECT classification_id, name, parent_id, price FROM classification ORDER BY parent_id, classification_id");
+                $stmt = $pdo->prepare("SELECT service_id, name, parent_id, price FROM services ORDER BY parent_id, service_id");
                 $stmt->execute();
 
                 // Fetch all classifications
                 $classifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                // Create an associative array with classification_id as key
+                // Create an associative array with service_id as key
                 $classification_map = [];
                 foreach ($classifications as $row) {
-                    $classification_map[$row['classification_id']] = $row;
+                    $classification_map[$row['service_id']] = $row;
                 }
 
                 // Function to build options from the map
@@ -95,16 +95,16 @@
                     foreach ($classifications as $row) {
                         if ($row['parent_id'] == $parent_id) {
                             $indentStr = str_repeat('&nbsp;&nbsp;&nbsp;', $indent);
-                            echo '<option value="' . htmlspecialchars($row['classification_id']) . '">' 
+                            echo '<option value="' . htmlspecialchars($row['service_id']) . '">' 
                                 . $indentStr . htmlspecialchars($row['name']) 
                                 . ' (₱' . number_format($row['price'], 2) . ')' 
                                 . '</option>';
 
                             // Fetch child classifications
                             $children = array_filter($classifications, function($item) use ($row) {
-                                return $item['parent_id'] == $row['classification_id'];
+                                return $item['parent_id'] == $row['service_id'];
                             });
-                            buildOptions($children, $classification_map, $row['classification_id'], $indent + 1);
+                            buildOptions($children, $classification_map, $row['service_id'], $indent + 1);
                         }
                     }
                 }

@@ -56,19 +56,27 @@ try {
 } catch (PDOException $e) {
     die("Error fetching billing records: " . $e->getMessage());
 }
-include 'sidebar.php';
+include 'sidebar.php'; // Sidebar should be included without changes
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Billing Records</title>
     <style>
+        /* Specific Styles for Billing Records */
         body {
             font-family: Arial, sans-serif;
             background: #f9f9f9;
             margin: 0;
             padding: 0;
+        }
+
+        .content-wrapper {
+            margin-left: 250px; /* Adjust based on sidebar width */
+            padding: 20px;
+            width: calc(100% - 250px); /* Adjust content width */
         }
 
         .container {
@@ -93,9 +101,10 @@ include 'sidebar.php';
         }
 
         table {
-            width: 100%;
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto 20px;
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
 
         table th, table td {
@@ -169,63 +178,65 @@ include 'sidebar.php';
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>Billing Records</h2>
+    <div class="content-wrapper">
+        <div class="container">
+            <h2>Billing Records</h2>
 
-    <?php if (!empty($message)): ?>
-        <div class="message"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
+            <?php if (!empty($message)): ?>
+                <div class="message"><?= htmlspecialchars($message) ?></div>
+            <?php endif; ?>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Billing ID</th>
-            <th>Patient Name</th>
-            <th>Service ID</th>
-            <th>Total</th>
-            <th>Discount</th>
-            <th>Amount Paid</th>
-            <th>Balance</th>
-            <th>Created At</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php if (!empty($bills)): ?>
-            <?php foreach ($bills as $bill): ?>
-                <tr>
-                    <td><?= htmlspecialchars($bill['billing_id']) ?></td>
-                    <td><?= htmlspecialchars($bill['full_name']) ?></td>
-                    <td><?= htmlspecialchars($bill['service_id']) ?></td>
-                    <td>₱<?= number_format($bill['total'], 2) ?></td>
-                    <td>₱<?= number_format($bill['discount'], 2) ?></td>
-                    <td>₱<?= number_format($bill['amount_paid'], 2) ?></td>
-                    <td>₱<?= number_format($bill['balance'], 2) ?></td>
-                    <td><?= htmlspecialchars($bill['created_at']) ?></td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="print_billing.php?billing_id=<?= htmlspecialchars($bill['billing_id']) ?>" class="print">Print</a>
-                            <a href="?delete_id=<?= htmlspecialchars($bill['billing_id']) ?>" class="delete" onclick="return confirm('Are you sure you want to delete this record?')">Delete</a>
-                        </div>
-                        <?php if ($bill['balance'] > 0): ?>
-                            <form class="form-inline" method="POST" action="">
-                                <input type="hidden" name="billing_id" value="<?= htmlspecialchars($bill['billing_id']) ?>">
-                                <input type="number" name="additional_payment" step="0.01" min="0" placeholder="Enter Payment" required>
-                                <button type="submit">Update</button>
-                            </form>
-                        <?php else: ?>
-                            <span class="status-paid">Fully Paid</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <tr>
-                <td colspan="9" style="text-align: center;">No billing records found.</td>
-            </tr>
-        <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Billing ID</th>
+                        <th>Patient Name</th>
+                        <th>Service ID</th>
+                        <th>Total</th>
+                        <th>Discount</th>
+                        <th>Amount Paid</th>
+                        <th>Balance</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($bills)): ?>
+                        <?php foreach ($bills as $bill): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($bill['billing_id']) ?></td>
+                                <td><?= htmlspecialchars($bill['full_name']) ?></td>
+                                <td><?= htmlspecialchars($bill['service_id']) ?></td>
+                                <td>₱<?= number_format($bill['total'], 2) ?></td>
+                                <td>₱<?= number_format($bill['discount'], 2) ?></td>
+                                <td>₱<?= number_format($bill['amount_paid'], 2) ?></td>
+                                <td>₱<?= number_format($bill['balance'], 2) ?></td>
+                                <td><?= htmlspecialchars($bill['created_at']) ?></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="print_billing.php?billing_id=<?= htmlspecialchars($bill['billing_id']) ?>" class="print">Print</a>
+                                        <a href="?delete_id=<?= htmlspecialchars($bill['billing_id']) ?>" class="delete" onclick="return confirm('Are you sure you want to delete this record?')">Delete</a>
+                                    </div>
+                                    <?php if ($bill['balance'] > 0): ?>
+                                        <form class="form-inline" method="POST" action="">
+                                            <input type="hidden" name="billing_id" value="<?= htmlspecialchars($bill['billing_id']) ?>">
+                                            <input type="number" name="additional_payment" step="0.01" min="0" placeholder="Enter Payment" required>
+                                            <button type="submit">Update</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span class="status-paid">Fully Paid</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="9" style="text-align: center;">No billing records found.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 </html>

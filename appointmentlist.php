@@ -81,21 +81,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 <?php
 try {
     $search = isset($_GET['search']) ? $_GET['search'] : '';
-    $sql = "
-      SELECT a.*, c.name as service_name, c.price
-      FROM appointments a
-      LEFT JOIN classification c ON a.classification_id = c.classification_id
-      WHERE a.first_name LIKE :search 
-          OR a.last_name LIKE :search
-          OR a.appointment_id LIKE :search 
-          OR a.type_of_visit LIKE :search 
-          OR a.appointment_date LIKE :search 
-          OR a.appointment_time LIKE :search 
-          OR a.contact_number LIKE :search 
-          OR c.name LIKE :search 
-          OR a.status LIKE :search
-      ORDER BY a.appointment_date DESC, a.appointment_time ASC
-    ";
+$sql = "
+  SELECT * FROM appointments
+  WHERE first_name LIKE :search 
+      OR last_name LIKE :search
+      OR appointment_id LIKE :search 
+      OR type_of_visit LIKE :search 
+      OR appointment_date LIKE :search 
+      OR appointment_time LIKE :search 
+      OR contact_number LIKE :search 
+      OR status LIKE :search
+  ORDER BY appointment_date DESC, appointment_time ASC
+";
+
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['search' => "%$search%"]);

@@ -9,6 +9,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $patient_id = $_GET['id'];
 
+
 try {
     // Fetch patient data
     $stmt = $pdo->prepare("SELECT * FROM patients WHERE patient_id = ?");
@@ -169,7 +170,7 @@ try {
                 </div>
                 <div class="detail-group">
                     <span class="detail-label">Service Availed:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['service_id']) ?></div>
+                    <div class="detail-value"><?= htmlspecialchars($patient['patient_id']) ?></div>
                 </div>
 
                  <div class="detail-group">
