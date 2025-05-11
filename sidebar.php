@@ -21,6 +21,7 @@
                     <i class="fas fa-chevron-down arrow"></i>
                 </a>
                 <ul class="dropdown">
+                     <li><a href="add_category.php">Category</a></li>
                     <li><a href="services.php">Services</a></li>
                     <li><a href="user.php">User</a></li>
                     <li><a href="patient.php">Patient</a></li>

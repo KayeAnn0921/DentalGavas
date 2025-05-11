@@ -1,14 +1,13 @@
 <?php
-// Database connection
 $host = 'localhost';
-$dbname = 'capstonegavasclinic';
-$username = 'root';
-$password = '';
+$db = 'capstonegavasclinic';
+$user = 'root';
+$pass = '';
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+    die("DB Connection failed: " . $e->getMessage());
 }
 ?>

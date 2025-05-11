@@ -1,104 +1,176 @@
-/* Reset some basic defaults */
-* {
+/* prescription.css */
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f9ff;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  body {
-    background-color: #f8f9fa;
-    padding: 20px;
-  }
-  
-  .patient-list-section {
-    margin-left: 250px; /* If using a sidebar */
-    padding: 20px;
-  }
-  
-  .list-header {
+    color: #2c3e50;
+    min-height: 100vh;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .list-header h3 {
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .search-box {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
+}
+
+/* Main Content Area */
+.prescription-form {
+    flex: 1;
+    max-width: 800px; /* Increased width */
+    margin: 40px auto;
+    padding: 40px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 82, 204, 0.1);
+}
+
+/* Header */
+.prescription-form h2 {
+    color: #0052cc;
+    margin-bottom: 30px;
+    font-size: 28px;
+    border-bottom: 2px solid #e1f0ff;
+    padding-bottom: 15px;
+}
+
+/* Form Elements */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Medicine Group Container */
+#medicineContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Individual Medicine Group */
+.medicine-group {
+    border: 1px solid #e1f0ff;
+    padding: 25px;
+    border-radius: 8px;
+    background: #f8fbff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.medicine-group label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 600;
+    color: #003366;
+}
+
+.medicine-group select,
+.medicine-group input {
+    padding: 12px 15px;
+    border: 1px solid #cce0ff;
     border-radius: 6px;
-    font-size: 14px;
-    width: 250px;
-  }
-  
-  form button {
-    background-color: #0066cc;
+    font-size: 16px;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.medicine-group select:focus,
+.medicine-group input:focus {
+    outline: none;
+    border-color: #0052cc;
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
+}
+
+/* Buttons */
+button {
+    padding: 14px 25px;
+    background-color: #0052cc;
     color: white;
     border: none;
-    padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  form button:hover {
-    background-color: #0052a3;
-  }
-  
-  .clear-search {
-    color: #d9534f;
-    text-decoration: none;
-    padding: 8px 12px;
-    font-weight: bold;
-    transition: color 0.3s ease;
-  }
-  
-  .clear-search:hover {
-    color: #c9302c;
-  }
-  
-  .table-container {
-    overflow-x: auto;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  thead th {
-    background-color: #007bff;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #003d99;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
+}
+
+button[type="button"] {
+    background-color: #338ac7;
+    align-self: flex-start;
+}
+
+.print-btn {
+    display: inline-block;
+    padding: 14px 25px;
+    background-color: #2592f1;
     color: white;
-    text-align: left;
-    padding: 12px 16px;
-  }
-  
-  tbody td {
-    padding: 12px 16px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  tbody tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-  .action-icons a {
-    color: #007bff;
-    margin-right: 10px;
-    font-size: 18px;
-    transition: color 0.2s ease;
-  }
-  
-  .action-icons a:hover {
-    color: #0056b3;
-  }
-  
+    text-decoration: none;
+    border-radius: 6px;
+    margin-left: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.print-btn:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* Back Button */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    margin: 25px;
+    color: #0052cc;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.back-btn:hover {
+    color: #003d99;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .prescription-form {
+        padding: 25px;
+        margin: 20px;
+    }
+    
+    .medicine-group {
+        grid-template-columns: 1fr;
+    }
+    
+    button, .print-btn {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .prescription-form {
+        padding: 20px 15px;
+    }
+    
+    .prescription-form h2 {
+        font-size: 24px;
+    }
+    
+    .medicine-group {
+        padding: 15px;
+    }
+}

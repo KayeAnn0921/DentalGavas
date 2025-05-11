@@ -31,7 +31,7 @@ if (isset($_GET['patient_id'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Prescription List | Gavas Dental Clinic</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-  <link rel="stylesheet" href="css/prescription.css"/>
+  <link rel="stylesheet" href="css/listprescription.css"/>
 </head>
 <body>
 <?php include 'sidebar.php'; ?>

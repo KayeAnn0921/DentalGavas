@@ -53,12 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Enter Prescription</title>
   <link rel="stylesheet" href="css/prescription.css"/>
-  <style>
-    .prescription-form { max-width: 600px; margin: auto; }
-    .prescription-form label { display: block; margin-top: 10px; }
-    .medicine-group { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
-    button { margin-top: 10px; }
-  </style>
+
 </head>
 <body>
 <?php include 'sidebar.php'; ?>

@@ -9,7 +9,20 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $patient_id = $_GET['id'];
 
-
+// Fetch services availed by the patient
+$services = [];
+try {
+    $serviceStmt = $pdo->prepare("
+        SELECT s.name 
+        FROM services s
+        INNER JOIN patient_services ps ON s.service_id = ps.service_id
+        WHERE ps.patient_id = ?
+    ");
+    $serviceStmt->execute([$patient_id]);
+    $services = $serviceStmt->fetchAll(PDO::FETCH_COLUMN, 0);
+} catch (PDOException $e) {
+    die("Error fetching services: " . $e->getMessage());
+}
 try {
     // Fetch patient data
     $stmt = $pdo->prepare("SELECT * FROM patients WHERE patient_id = ?");
@@ -166,11 +179,21 @@ try {
             <div class="view-details">
                 <div class="detail-group">
                     <span class="detail-label">Patient ID:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['patient_id']) ?></div>
+                    <div class="detail-value"><?= htmlspecialchars($patient['first_name']) ?></div>
                 </div>
                 <div class="detail-group">
-                    <span class="detail-label">Service Availed:</span>
-                    <div class="detail-value"><?= htmlspecialchars($patient['patient_id']) ?></div>
+                    <span class="detail-label">Services Availed:</span>
+                    <div class="detail-value">
+                        <?php if (!empty($services)): ?>
+                            <ul>
+                                <?php foreach ($services as $service): ?>
+                                    <li><?= htmlspecialchars($service) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            No services availed.
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                  <div class="detail-group">
