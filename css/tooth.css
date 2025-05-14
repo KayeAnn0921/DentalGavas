@@ -1,73 +1,211 @@
+/* General Layout */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+    background-color: #f9f9f9;
+}
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            min-height: 100vh;
-        }
-        #sidebar {
-            width: 250px;
-            background-color: #f0f0f0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            box-sizing: border-box;
-            margin-left: 250px; /* Same as sidebar width */
-        }
-        .recommendation {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            font-weight: bold;
-            text-align: center;
-        }
-        table.legend {
-            border-collapse: collapse;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto 30px;
-            border: 1px solid #ddd;
-        }
-        table.legend td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .tooth-row {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-            align-items: flex-end;
-        }
-        .tooth-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 2px;
-        }
-        .tooth-input {
-            width: 30px;
-            margin-bottom: 5px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        .tooth-img {
-            width: 30px;
-            height: 30px;
-        }
-        .tooth-number {
-            font-size: 10px;
-            margin-top: 3px;
-        }
-        .arch-label {
-            margin: 5px 0;
-            font-weight: bold;
-            text-align: center;
-        }
-        .chart-container {
-            text-align: center;
-        }
-   
+#sidebar {
+    width: 250px;
+    background-color: #f0f0f0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    margin-left: 10px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Page Title */
+h1 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+}
+h3{
+    font-size: 15px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+
+/* Legend Table */
+.legend {
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.legend th, .legend td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.legend th {
+    background-color: #3498db;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Tooth Chart */
+.tooth-chart {
+    margin: 30px auto;
+    text-align: center;
+}
+
+.arch-label {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 20px 0 10px;
+}
+
+.tooth-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.tooth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20.5px;
+    margin: 5px;
+}
+
+.tooth-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-bottom: 5px;
+}
+
+.tooth-number {
+    font-size: 12px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.tooth-condition {
+    width: 30px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 12px;
+}
+
+/* Form Styles */
+form {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form .form-group {
+    margin-bottom: 15px;
+}
+
+form label {
+    display: block;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+form select, form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+form textarea {
+    resize: none;
+}
+
+form button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #3498db;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+form button:hover {
+    background-color: #2980b9;
+}
+
+/* Alerts */
+.alert {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .tooth-container {
+        width: 50px;
+    }
+
+    .tooth-img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .tooth-condition {
+        width: 40px;
+    }
+}
