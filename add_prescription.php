@@ -26,16 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $medicines = $_POST['medicines'] ?? [];
     $sigs = $_POST['sig'] ?? [];
     $quantities = $_POST['quantity'] ?? [];
+    $directions = $_POST['direction'] ?? [];
 
     try {
         $pdo->beginTransaction();
 
         foreach ($medicines as $index => $medicineId) {
-            if (!empty($medicineId) && !empty($sigs[$index]) && !empty($quantities[$index])) {
-                $stmt = $pdo->prepare("INSERT INTO prescription (patient_id, med_id, sig, quantity) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$patientId, $medicineId, $sigs[$index], $quantities[$index]]);
-            }
-        }
+          if (!empty($medicineId) && !empty($sigs[$index]) && !empty($directions[$index]) && !empty($quantities[$index])) {
+              $stmt = $pdo->prepare("INSERT INTO prescription (patient_id, med_id, sig, direction, quantity) VALUES (?, ?, ?, ?, ?)");
+              $stmt->execute([$patientId, $medicineId, $sigs[$index], $directions[$index], $quantities[$index]]);
+          }
+      }
 
         $pdo->commit();
         header("Location: prescription.php"); // Redirect back to prescription_list.php
@@ -65,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div id="medicineContainer">
   <div class="medicine-group">
-    <label>Medicine:
-      <select name="medicines[]">
+    <label>Medicine
+      <select name="medicines[]" required>
         <option value="">-- Select Medicine --</option>
         <?php foreach ($medications as $medication): ?>
           <option value="<?= htmlspecialchars($medication['id']) ?>">
@@ -75,14 +76,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
       </select>
     </label>
-    <label>SIG (Directions): <input type="text" name="sig[]"></label>
-    <label>Tab Quantity: <input type="number" name="quantity[]" min="1"></label>
+    <label>SIG
+      <input type="text" name="sig[]" placeholder="e.g. 1 tab" required>
+    </label>
+    <label>Direction
+      <input type="text" name="direction[]" placeholder="e.g. every 8 hours" required>
+    </label>
+    <label>Tab Quantity
+      <input type="number" name="quantity[]" min="1" placeholder="e.g. 10" required>
+    </label>
+    <button type="button" class="remove-btn" onclick="removeMedicine(this)">Remove</button>
   </div>
 </div>
-<button type="button" onclick="addMedicine()">+ Add Another Medicine</button>
-    <br><br>
-    <button type="submit">Save</button>
-    <a href="print_prescription.php?id=<?= $patientId ?>" class="print-btn" target="_blank">Print</a>
+<button type="button" onclick="addMedicine()" class="add-btn">+ Add Another Medicine</button>
+<button type="submit" class="save-btn">Save Prescription</button>
   </form>
 </div>
 
@@ -92,8 +99,8 @@ function addMedicine() {
   const newGroup = document.createElement("div");
   newGroup.className = "medicine-group";
   newGroup.innerHTML = `
-    <label>Medicine:
-      <select name="medicines[]">
+    <label>Medicine
+      <select name="medicines[]" required>
         <option value="">-- Select Medicine --</option>
         <?php foreach ($medications as $medication): ?>
           <option value="<?= htmlspecialchars($medication['id']) ?>">
@@ -102,11 +109,28 @@ function addMedicine() {
         <?php endforeach; ?>
       </select>
     </label>
-    <label>SIG (Directions): <input type="text" name="sig[]"></label>
-    <label>Tab Quantity: <input type="number" name="quantity[]" min="1"></label>
+    <label>SIG
+      <input type="text" name="sig[]" placeholder="e.g. 1 tab" required>
+    </label>
+    <label>Direction
+      <input type="text" name="direction[]" placeholder="e.g. every 8 hours" required>
+    </label>
+    <label>Tab Quantity
+      <input type="number" name="quantity[]" min="1" placeholder="e.g. 10" required>
+    </label>
+    <button type="button" class="remove-btn" onclick="removeMedicine(this)">Remove</button>
   `;
   container.appendChild(newGroup);
 }
+function removeMedicine(btn) {
+  btn.parentElement.remove();
+}
+
+// Hide the remove button for the first group on page load
+window.onload = function() {
+  const firstRemoveBtn = document.querySelector('#medicineContainer .medicine-group .remove-btn');
+  if (firstRemoveBtn) firstRemoveBtn.style.display = 'none';
+};
 </script>
 </body>
 </html>

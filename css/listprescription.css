@@ -1,225 +1,366 @@
-/* prescription.css - Patient List Styling */
-
-/* Base Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f9ff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafd;
     margin: 0;
     padding: 0;
-    color: #2c3e50;
-    min-height: 100vh;
-    display: flex;
 }
-
-/* Main Content Area */
 .patient-list-section {
-    flex: 1;
-    padding: 30px;
-    margin-left: 250px; /* Adjust based on sidebar width */
-    transition: margin-left 0.3s;
-    width: calc(100% - 250px);
+    width: 1200 px;
+    margin: 32px auto;
+    padding: 32px 24px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(30,136,229,0.07);
 }
-
-/* Header Section */
 .list-header {
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 82, 204, 0.1);
-    margin-bottom: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 24px;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 12px;
 }
-
 .list-header h3 {
-    color: #0052cc;
-    margin: 0;
-    font-size: 24px;
+    color: #1976d2;
+    font-size: 1.3rem;
     font-weight: 600;
+    margin: 0;
 }
-
-/* Search Form */
-.list-header form {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
 .search-box {
-    padding: 12px 15px;
-    border: 1px solid #cce0ff;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #d1d9e6;
     border-radius: 6px;
-    font-size: 16px;
-    width: 300px;
-    transition: all 0.3s ease;
-    background-color: #f8fbff;
+    background: #f8fafc;
+    width: 200px;
+    transition: border 0.2s;
 }
-
 .search-box:focus {
+    border: 1.5px solid #1976d2;
     outline: none;
-    border-color: #0052cc;
-    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
+    background: #fff;
 }
-
-.list-header button[type="submit"] {
-    padding: 12px 20px;
-    background-color: #0052cc;
-    color: white;
+.list-header button {
+    background: #1976d2;
+    color: #fff;
     border: none;
     border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.list-header button[type="submit"]:hover {
-    background-color: #003d99;
-    transform: translateY(-2px);
-}
-
-.clear-search {
-    padding: 12px 15px;
-    color: #0052cc;
-    text-decoration: none;
+    padding: 10px 18px;
+    font-size: 1rem;
     font-weight: 600;
-    transition: all 0.3s ease;
+    cursor: pointer;
+    transition: background 0.2s;
 }
-
-.clear-search:hover {
+.list-header button:hover {
+    background: #1256a3;
+}
+.clear-search {
+    color: #c62828;
+    font-size: 1rem;
     text-decoration: underline;
+    margin-left: 8px;
 }
-
-/* Table Container */
 .table-container {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 82, 204, 0.1);
+    width: 100%;
     overflow-x: auto;
+    margin-bottom: 32px;
 }
-
-/* Table Styling */
-table {
+.table-container table, .prescription-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    background: #fff;
 }
-
-th {
-    background-color: #0052cc;
-    color: white;
-    padding: 15px;
+.table-container th, .table-container td,
+.prescription-table th, .prescription-table td {
+    padding: 13px 10px;
     text-align: left;
+    border-bottom: 1px solid #e6eaf0;
+    font-size: 1rem;
+    vertical-align: middle;
+}
+.table-container th, .prescription-table th {
+    background: #f6f8fa;
     font-weight: 600;
-    position: sticky;
-    top: 0;
+    color: #2d3a4b;
 }
-
-td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e1f0ff;
+.table-container tr:last-child td,
+.prescription-table tr:last-child td {
+    border-bottom: none;
 }
-
-tr:hover {
-    background-color: #f8fbff;
+.table-container tr:hover td,
+.prescription-table tr:hover td {
+    background-color: #f0f4fa;
+    transition: background 0.2s;
 }
-
-/* Action Icons */
 .action-icons {
     display: flex;
-    gap: 15px;
-}
-
-.action-icons a {
-    color: #0052cc;
-    font-size: 18px;
-    transition: all 0.3s ease;
-    padding: 8px;
-    border-radius: 50%;
-    display: inline-flex;
+    gap: 10px;
+    justify-content: flex-start;
     align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
 }
-
+.action-icons a {
+    color: #1976d2;
+    background: #e3e8ee;
+    border-radius: 6px;
+    padding: 7px 10px;
+    transition: background 0.18s, color 0.18s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
 .action-icons a:hover {
-    background-color: rgba(0, 82, 204, 0.1);
-    transform: scale(1.1);
+    background: #1976d2;
+    color: #fff;
 }
-
-/* No Results Message */
-td[colspan="5"] {
-    text-align: center;
-    padding: 30px;
-    color: #6c757d;
-    font-style: italic;
+.action-icons i {
+    font-size: 1.1rem;
 }
-
-/* Responsive Design */
-@media (max-width: 992px) {
+.prescription-title {
+    margin-top: 36px;
+    margin-bottom: 10px;
+    color: #1976d2;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.prescription-table {
+    margin-bottom: 24px;
+}
+@media (max-width: 700px) {
     .patient-list-section {
-        margin-left: 0;
-        width: 100%;
-        padding: 20px;
+        padding: 12px 2px;
     }
-    
     .list-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 10px;
     }
-    
     .search-box {
         width: 100%;
     }
 }
 
-@media (max-width: 768px) {
-    .table-container {
+ .patient-details {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 5px;
+        
+    }
+    
+    .chart {
+        margin-bottom: 20px;
         padding: 15px;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
     }
     
-    th, td {
-        padding: 10px;
+    .tooth-conditions {
+        margin-top: 15px;
     }
+    
+    .tooth-conditions table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .tooth-conditions th, .tooth-conditions td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    
+    .tooth-conditions th {
+        background-color: #f2f2f2;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 8px 15px;
+        background: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 10px;
+        margin-right: 10px;
+    }
+    
+    .btn:hover {
+        background: #45a049;
+    }
+    
+    .btn-back {
+        background: #6c757d;
+    }
+    
+    .btn-back:hover {
+        background: #5a6268;
+    }
+    .patient-details {
+    margin: 40px auto;
+    max-width: 700px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(25, 118, 210, 0.07);
+    padding: 32px 28px 24px 28px;
 }
 
-@media (max-width: 480px) {
-    .patient-list-section {
-        padding: 15px;
+.patient-header {
+    border-bottom: 1.5px solid #e3e8ee;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+}
+
+.patient-header h2 {
+    color: #1976d2;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.patient-meta {
+    display: flex;
+    gap: 24px;
+    color: #607d8b;
+    font-size: 1rem;
+}
+
+.patient-meta i {
+    margin-right: 6px;
+    color: #1976d2;
+}
+
+.dental-charts h3 {
+    color: #1976d2;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart {
+    background: #f8fafc;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
+    padding: 18px 16px 14px 16px;
+    margin-bottom: 22px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.chart-description {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+.tooth-conditions h4 {
+    color: #1976d2;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+.tooth-conditions table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 0.98rem;
+}
+
+.tooth-conditions th, .tooth-conditions td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e6eaf0;
+    text-align: left;
+}
+
+.tooth-conditions th {
+    background: #f6f8fa;
+    font-weight: 600;
+    color: #2d3a4b;
+}
+
+.tooth-conditions tr:last-child td {
+    border-bottom: none;
+}
+
+.no-charts {
+    color: #c62828;
+    font-weight: 500;
+    margin-top: 18px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+
+.btn-primary {
+    background: #1976d2;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #1256a3;
+}
+
+.btn-secondary {
+    background: #e3e8ee;
+    color: #1976d2;
+}
+
+.btn-secondary:hover {
+    background: #cfd8dc;
+    color: #1256a3;
+}
+
+@media (max-width: 800px) {
+    .patient-details {
+        padding: 16px 4px;
+        max-width: 98vw;
     }
-    
-    .list-header {
-        padding: 20px 15px;
+    .chart {
+        padding: 10px 4px;
     }
-    
-    .list-header h3 {
-        font-size: 20px;
+    .action-buttons {
+        flex-direction: column;
+        gap: 8px;
     }
-    
-    .list-header button[type="submit"],
-    .clear-search {
-        width: 100%;
-    }
-    
-    .action-icons {
-        gap: 10px;
-    }
-    
-    .action-icons a {
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
+    .patient-meta {
+        flex-direction: column;
+        gap: 6px;
     }
 }

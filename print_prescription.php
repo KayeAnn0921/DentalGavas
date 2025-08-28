@@ -98,7 +98,7 @@ try {
   </style>
 </head>
 <body>
-<a href="view_prescription.php?id=<?= $patient_id ?>" class="back-btn">← Back</a>
+<a href="prescription.php?id=<?= $patient_id ?>" class="back-btn">← Back</a>
 <div class="rx-container">
   <div class="clinic-info">
     <strong>Dr. Glenn E. Gavas, DMD</strong><br>

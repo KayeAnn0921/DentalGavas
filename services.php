@@ -143,7 +143,7 @@ $subservices = $pdo->query("SELECT s.*, c.name AS category_name, p.name AS paren
                 <tr>
                     <th>Category</th>
                     <th>Service</th>
-                    <th>Parent</th>
+                    <th>Sub Service</th>
                     <th>Price</th>
                     <th>Actions</th>
                 </tr>

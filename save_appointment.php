@@ -1,4 +1,5 @@
 <?php
+
 include 'config.php';
 
 // Check if form is submitted
@@ -13,10 +14,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $appointment_date = $_POST['appointmentDate'];
     $appointment_time = $_POST['appointmentTime'];
     $contact_number = $_POST['contactNumber'];
-    $service_id = $_POST['service_id'];
+    $service_id = isset($_POST['service_id']) && $_POST['service_id'] !== '' ? $_POST['service_id'] : null;
     $doctor = $_POST['doctor'];
     $status = 'pending'; // Default status
-    
+
     // Validate contact number format
     if (!preg_match('/^(09|\+639)\d{9}$/', $contact_number)) {
         echo "<script>
@@ -25,14 +26,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </script>";
         exit;
     }
-    
-    // Check if the service exists
-    $check_stmt = $pdo->prepare("SELECT service_id FROM services WHERE service_id = :service_id");
-    $check_stmt->execute([':service_id' => $service_id]);
-    
-    if ($check_stmt->rowCount() == 0) {
-        echo "Error: The selected service (ID: $service_id) does not exist in our system.";
-        exit;
+
+    // Only check if service_id is provided
+    if ($service_id !== null && $service_id !== '') {
+        $check_stmt = $pdo->prepare("SELECT service_id FROM services WHERE service_id = :service_id");
+        $check_stmt->execute([':service_id' => $service_id]);
+        if ($check_stmt->rowCount() == 0) {
+            echo "<script>
+                alert('Error: The selected service (ID: $service_id) does not exist in our system.');
+                window.history.back();
+            </script>";
+            exit;
+        }
     }
 
     // Check doctor availability for the selected time
@@ -50,34 +55,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':appointment_date' => $appointment_date
         ]);
         $doctor_availability = $availability_stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if (!$doctor_availability) {
             throw new Exception("The selected doctor is not available on this date.");
         }
-        
-        // Check if the selected time is within doctor's working hours
-        $selected_time = strtotime($appointment_time);
-        $start_time = strtotime($doctor_availability['start_time']);
-        $end_time = strtotime($doctor_availability['end_time']);
-        
-        if ($selected_time < $start_time || $selected_time > $end_time) {
+
+        // Extract start and end time from appointmentTime (e.g., "8:00 AM - 11:00 AM")
+        if (strpos($appointment_time, '-') === false) {
+            throw new Exception("Invalid appointment time format.");
+        }
+        list($slot_start, $slot_end) = explode('-', $appointment_time);
+        $slot_start = trim($slot_start);
+        $slot_end = trim($slot_end);
+
+        // Convert AM/PM to 24-hour format
+        function to24Hour($timeStr) {
+            return date("H:i:s", strtotime($timeStr));
+        }
+        $slot_start_24 = to24Hour($slot_start);
+        $slot_end_24 = to24Hour($slot_end);
+
+        $start_time = $doctor_availability['start_time']; // e.g., "08:00:00"
+        $end_time = $doctor_availability['end_time'];     // e.g., "16:00:00"
+
+        if ($slot_start_24 < $start_time || $slot_end_24 > $end_time) {
             throw new Exception("The selected time is outside the doctor's working hours.");
         }
-        
-        // Check for existing appointments at the same time
+
+        // Check for existing appointments that overlap with the selected slot
         $conflict_stmt = $pdo->prepare("
             SELECT appointment_id 
             FROM appointments 
             WHERE doctor = :doctor 
             AND appointment_date = :appointment_date 
-            AND appointment_time = :appointment_time
+            AND (
+                (STR_TO_DATE(SUBSTRING_INDEX(appointment_time, '-', 1), '%h:%i %p') < STR_TO_DATE(:slot_end, '%H:%i:%s')
+                 AND STR_TO_DATE(SUBSTRING_INDEX(appointment_time, '-', -1), '%h:%i %p') > STR_TO_DATE(:slot_start, '%H:%i:%s'))
+            )
         ");
         $conflict_stmt->execute([
             ':doctor' => $doctor,
             ':appointment_date' => $appointment_date,
-            ':appointment_time' => $appointment_time
+            ':slot_start' => $slot_start_24,
+            ':slot_end' => $slot_end_24
         ]);
-        
+
         if ($conflict_stmt->rowCount() > 0) {
             throw new Exception("This time slot is already booked. Please choose another time.");
         }
@@ -104,17 +126,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':appointment_date' => $appointment_date,
             ':appointment_time' => $appointment_time,
             ':contact_number' => $contact_number,
-            ':service_id' => $service_id,
+            ':service_id' => $service_id !== null ? $service_id : null,
             ':status' => $status,
             ':doctor' => $doctor
         ]);
-
         // Success message and redirect
         echo "<script>
             alert('Appointment successfully saved!');
             window.location.href = 'appointmentlist.php';
         </script>";
-        
+
     } catch (PDOException $e) {
         echo "<script>
             alert('Database Error: " . addslashes($e->getMessage()) . "');

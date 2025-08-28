@@ -1,228 +1,206 @@
-/* services.css */
-
-/* Main layout */
-.main-content {
-    margin-left: 250px; /* Same as sidebar width */
-    padding: 20px;
-    width: calc(100% - 250px); /* Full width minus sidebar */
-    box-sizing: border-box;
+body {
+    background: #f4f7fa;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
-
-/* Form container */
-.form-container {
+.main-content {
+    margin-left: 260px;
+    padding: 40px 40px 32px 40px;
     max-width: 1200px;
     width: 100%;
-    margin: 0 auto 40px auto;
-    padding: 25px;
+    box-sizing: border-box;
+    min-height: 100vh;
+}
+@media (max-width: 1300px) {
+    .main-content { margin-left: 200px; padding: 28px 2vw; }
+}
+@media (max-width: 900px) {
+    .main-content { margin-left: 80px; padding: 14px 1vw; }
+}
+@media (max-width: 700px) {
+    .main-content { margin-left: 0; padding: 6px 2px; }
+}
+
+/* --- Card Containers --- */
+.form-container, .classification-container {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(25,118,210,0.10);
+    padding: 32px 28px 22px 28px;
+    margin-bottom: 36px;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
-
-.form-container h2 {
-    margin-top: 0;
-    color: #2c3e50;
-    font-size: 24px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+.form-container h2, .classification-container h2 {
+    color: #1976d2;
+    font-size: 1.6em;
     margin-bottom: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #e3e7ea;
+    padding-bottom: 10px;
 }
 
-/* Form elements */
+/* --- Form Elements --- */
 form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 20px 28px;
+    align-items: end;
 }
-
 form label {
-    display: block;
-    margin-bottom: 8px;
     font-weight: 600;
-    color: #555;
+    color: #1976d2;
+    margin-bottom: 7px;
+    display: block;
 }
-
 form input[type="text"],
 form input[type="number"],
 form select {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-    margin-bottom: 15px;
+    padding: 11px 13px;
+    border: 1.5px solid #b0bec5;
+    border-radius: 7px;
+    font-size: 1em;
+    background: #f7fbff;
+    margin-bottom: 0;
+    transition: border 0.2s;
 }
-
-form button {
+form input[type="text"]:focus,
+form input[type="number"]:focus,
+form select:focus {
+    border: 1.5px solid #1976d2;
+    outline: none;
+    background: #e3f2fd;
+}
+#subservices-container {
     grid-column: span 2;
-    background-color: #3498db;
-    color: white;
-    padding: 12px;
+    margin-bottom: 10px;
+}
+.subservice-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.subservice-row input,
+.subservice-row select {
+    margin-bottom: 0;
+}
+
+/* --- Blue Buttons & Actions --- */
+.classification-container button,
+.subservice-row button,
+form button[type="button"],
+form button[type="submit"] {
+    background: #1976d2 !important;
+    color: #fff !important;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 1em;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: background-color 0.3s;
+    transition: background 0.2s;
+    margin-right: 4px;
+}
+.classification-container button:last-child,
+.subservice-row button:last-child {
+    margin-right: 0;
+}
+.classification-container button:hover,
+.subservice-row button:hover,
+form button[type="button"]:hover,
+form button[type="submit"]:hover {
+    background: #1256a3 !important;
+    color: #fff !important;
+}
+/* Make edit/trash icons white for contrast */
+.classification-container .fa-edit,
+.classification-container .fa-trash-alt {
+    color: #fff !important;
 }
 
-form button:hover {
-    background-color: #2980b9;
-}
-
-/* Classification container */
-.classification-container {
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
-    background: #fff;
-    padding: 25px;
+/* --- Messages --- */
+.message {
+    padding: 13px 20px;
+    margin-bottom: 20px;
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+    font-size: 1em;
+}
+.message.success {
+    background-color: #e3f9e5;
+    color: #388e3c;
+}
+.message.error {
+    background-color: #ffeaea;
+    color: #d32f2f;
 }
 
-.classification-container h2 {
-    margin-top: 0;
-    color: #2c3e50;
-    font-size: 24px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
+/* --- Table Styles --- */
+.classification-container table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(25,118,210,0.07);
+    margin-top: 12px;
 }
-
-/* Search container */
-.search-container {
-    margin-bottom: 20px;
+.classification-container th {
+    background: #e3f0fc;
+    color: #1976d2;
+    font-weight: 700;
+    padding: 13px 11px;
+    text-align: left;
+    font-size: 1.08em;
 }
-
-.search-container form {
+.classification-container td {
+    padding: 12px 11px;
+    border-bottom: 1px solid #e3e7ea;
+    font-size: 1em;
+    background: #fff;
+    vertical-align: middle;
+}
+.classification-container tr:last-child td {
+    border-bottom: none;
+}
+.classification-container .actions {
     display: flex;
     gap: 10px;
 }
-
-.search-container input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.search-container button {
-    padding: 10px 20px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.search-container button:hover {
-    background-color: #2980b9;
-}
-
-/* Table styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table th {
-    background-color: #f8f9fa;
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #ddd;
-}
-
-table td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    vertical-align: middle;
-}
-
-table tr:last-child td {
-    border-bottom: none;
-}
-
-/* Service type styling */
-.main-service {
-    font-weight: 600;
-    background-color: #f8f9fa;
-}
-
-.sub-service {
-    font-weight: normal;
-}
-
-/* Action buttons */
-.actions {
-    white-space: nowrap;
-}
-
-.edit-btn, .delete-btn {
-    display: inline-block;
-    padding: 5px 10px;
-    margin-right: 5px;
-    border-radius: 4px;
-    color: white;
-    text-decoration: none;
-    transition: opacity 0.3s;
-}
-
-.edit-btn {
-    background-color: #3a8fff;
-}
-
-.delete-btn {
-    background-color: #e74c3c;
-}
-
-.edit-btn:hover, .delete-btn:hover {
-    opacity: 0.8;
-}
-
-/* Message styling */
-.message {
-    padding: 12px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-
-.message.success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
 .no-records {
     text-align: center;
-    padding: 20px;
-    color: #777;
+    color: #b0bec5;
+    font-style: italic;
+    padding: 18px 0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0;
-        width: 100%;
+/* --- Responsive --- */
+@media (max-width: 1100px) {
+    .main-content, .form-container, .classification-container {
+        max-width: 98vw;
+        padding: 18px 2vw 18px 2vw;
     }
-    
-    form {
-        grid-template-columns: 1fr;
-    }
-    
-    form button {
-        grid-column: span 1;
-    }
+    .classification-container table { font-size: 0.98em; }
+}
+@media (max-width: 900px) {
+    .main-content { margin-left: 80px; }
+    .form-container, .classification-container { padding: 10px 1vw 10px 1vw; }
+    form { grid-template-columns: 1fr; }
+    #subservices-container { grid-column: span 1; }
+    .subservice-row { flex-direction: column; gap: 7px; }
+    .classification-container th, .classification-container td { padding: 8px 4px; font-size: 0.96rem; }
+}
+@media (max-width: 700px) {
+    .main-content, .form-container, .classification-container { padding: 4px 2px; margin-left: 0; }
+    .classification-container th, .classification-container td { padding: 6px 2px; font-size: 0.93rem; }
+    .form-container h2, .classification-container h2 { font-size: 1.1em; }
+    .classification-container, table { overflow-x: auto; display: block; }
+    table { min-width: 600px; }
 }

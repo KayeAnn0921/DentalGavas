@@ -121,9 +121,119 @@ body {
     margin-top: 20px;
 }
 
-.main-content {
-    margin-left: 250px; /* Adjust this to match the sidebar width */
-    padding: 20px;
-    position: relative;
-    z-index: 1; /* Ensures the main content is below the sidebar */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 180px;
+        padding: 12px;
+    }
+    .logo-container {
+        padding: 8px;
+    }
+    .logo-container img {
+        width: 36px;
+        height: 36px;
+    }
+    .logo-text {
+        font-size: 15px;
+    }
+    .sidebar a, .dropdown a {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 700px) {
+    .sidebar {
+        position: fixed;
+        width: 100vw;
+        height: auto;
+        min-height: 60px;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        padding: 6px 4px;
+    }
+    .sidebar ul {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+    .sidebar ul li {
+        margin: 0;
+    }
+    .sidebar a, .dropdown a {
+        padding: 8px 10px;
+        font-size: 13px;
+        border-radius: 5px;
+        white-space: nowrap;
+    }
+    .logo-container {
+        margin-bottom: 0;
+        margin-right: 12px;
+        padding: 0;
+    }
+    .logout-btn {
+        margin-top: 0;
+        margin-left: auto;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    body {
+        flex-direction: column;
+    }
+}
+@media (min-width: 901px) {
+    .main-content {
+        margin-left: 250px; /* Same as sidebar width */
+        width: calc(100% - 250px);
+        box-sizing: border-box;
+    }
+}
+
+/* For medium laptops/desktops */
+@media (max-width: 1200px) and (min-width: 901px) {
+    .sidebar {
+        width: 200px;
+        padding: 14px;
+    }
+    .main-content {
+        margin-left: 200px;
+        width: calc(100% - 200px);
+    }
+    .logo-container img {
+        width: 40px;
+        height: 40px;
+    }
+    .logo-text {
+        font-size: 16px;
+    }
+}
+
+/* For smaller laptops/tablets */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 160px;
+        padding: 8px;
+    }
+    .main-content {
+        margin-left: 160px;
+        width: calc(100% - 160px);
+    }
+    .logo-container img {
+        width: 32px;
+        height: 32px;
+    }
+    .logo-text {
+        font-size: 13px;
+    }
 }
