@@ -577,11 +577,12 @@ foreach ($services as $service) {
                 <input type="hidden" name="patient_id" value="<?= $patient_data['patient_id'] ?>">
             <?php endif; ?>
 
-            <div>
-                <label for="visit_date">Visit Date</label>
-                <input type="date" name="visit_date" id="visit_date" required
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['visit_date'] : date('Y-m-d')) ?>">
-            </div>
+           <div>
+    <label for="visit_date">Visit Date <span class="required">*</span></label>
+    <input type="date" name="visit_date" id="visit_date" required
+           min="<?= date('Y-m-d') ?>"
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['visit_date'] : date('Y-m-d')) ?>">
+</div>
             <div>
                 <label for="visit_type">Visit Type</label>
                 <select name="visit_type" id="visit_type" required>
@@ -625,61 +626,62 @@ foreach ($services as $service) {
                 </div>
             </div>
             <div>
-                <label for="last_name">Last Name</label>
-                <input type="text" name="last_name" id="last_name" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['last_name'] : 
-                                                ((!$edit_mode && isset($prefill_data['last_name'])) ? $prefill_data['last_name'] : '')) ?>">
+    <label for="last_name">Last Name <span style="color:red">*</span></label>
+    <input type="text" name="last_name" id="last_name" required 
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['last_name'] : 
+                                    ((!$edit_mode && isset($prefill_data['last_name'])) ? $prefill_data['last_name'] : '')) ?>">
+            </div>
+            
+<div>
+    <label for="first_name">First Name <span style="color:red">*</span></label>
+    <input type="text" name="first_name" id="first_name" required 
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['first_name'] : 
+                                    ((!$edit_mode && isset($prefill_data['first_name'])) ? $prefill_data['first_name'] : '')) ?>">
             </div>
             <div>
-                <label for="first_name">First Name</label>
-                <input type="text" name="first_name" id="first_name" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['first_name'] : 
-                                                ((!$edit_mode && isset($prefill_data['first_name'])) ? $prefill_data['first_name'] : '')) ?>">
+                <label for="middle_name">Middle Name <span style="color:red">*</span></label>
+    <input type="text" name="middle_name" id="middle_name" required
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['middle_name'] : '') ?>">
             </div>
             <div>
-                <label for="middle_name">Middle Name</label>
-                <input type="text" name="middle_name" id="middle_name" 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['middle_name'] : '') ?>">
-            </div>
-            <div>
-                <label for="birthdate">Birthdate</label>
-                <input type="date" name="birthdate" id="birthdate" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['birthdate'] : '') ?>" onchange="calculateAge()">
+               <label for="birthdate">Birthdate <span style="color:red">*</span></label>
+    <input type="date" name="birthdate" id="birthdate" required 
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['birthdate'] : '') ?>" onchange="calculateAge()">
             </div>
             <div>
                 <label for="age">Age</label>
-                <input type="number" name="age" id="age" required readonly 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['age'] : '') ?>">
+    <input type="number" name="age" id="age" required readonly 
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['age'] : '') ?>">
             </div>
             <div>
-                <label for="sex">Sex</label>
-                <select name="sex" id="sex" required>
-                    <option value="">Select</option>
-                    <option value="Male" <?= ($edit_mode && $patient_data['sex'] == 'Male') ? 'selected' : '' ?>>Male</option>
-                    <option value="Female" <?= ($edit_mode && $patient_data['sex'] == 'Female') ? 'selected' : '' ?>>Female</option>
+                <label for="sex">Sex <span style="color:red">*</span></label>
+    <select name="sex" id="sex" required>
+        <option value="">Select</option>
+        <option value="Male" <?= ($edit_mode && $patient_data['sex'] == 'Male') ? 'selected' : '' ?>>Male</option>
+        <option value="Female" <?= ($edit_mode && $patient_data['sex'] == 'Female') ? 'selected' : '' ?>>Female</option>
                 </select>
             </div>
             <div>
-                <label for="civil_status">Civil Status</label>
-                <select name="civil_status" id="civil_status" required>
-                    <option value="">Select</option>
-                    <option value="Single" <?= ($edit_mode && $patient_data['civil_status'] == 'Single') ? 'selected' : '' ?>>Single</option>
-                    <option value="Married" <?= ($edit_mode && $patient_data['civil_status'] == 'Married') ? 'selected' : '' ?>>Married</option>
-                    <option value="Divorced" <?= ($edit_mode && $patient_data['civil_status'] == 'Divorced') ? 'selected' : '' ?>>Divorced</option>
-                    <option value="Widowed" <?= ($edit_mode && $patient_data['civil_status'] == 'Widowed') ? 'selected' : '' ?>>Widowed</option>
+                <label for="civil_status">Civil Status <span style="color:red">*</span></label>
+    <select name="civil_status" id="civil_status" required>
+        <option value="">Select</option>
+        <option value="Single" <?= ($edit_mode && $patient_data['civil_status'] == 'Single') ? 'selected' : '' ?>>Single</option>
+        <option value="Married" <?= ($edit_mode && $patient_data['civil_status'] == 'Married') ? 'selected' : '' ?>>Married</option>
+        <option value="Divorced" <?= ($edit_mode && $patient_data['civil_status'] == 'Divorced') ? 'selected' : '' ?>>Divorced</option>
+        <option value="Widowed" <?= ($edit_mode && $patient_data['civil_status'] == 'Widowed') ? 'selected' : '' ?>>Widowed</option>
                 </select>
             </div>
             <div>
-                <label for="mobile_number">Mobile Number</label>
-                <input type="text" name="mobile_number" id="mobile_number" required 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['mobile_number'] : 
-                                                ((!$edit_mode && isset($prefill_data['contact_number'])) ? $prefill_data['contact_number'] : '')) ?>">
-            </div>
+                <label for="mobile_number">Mobile Number <span style="color:red">*</span></label>
+    <input type="text" name="mobile_number" id="mobile_number" required 
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['mobile_number'] : 
+                                    ((!$edit_mode && isset($prefill_data['contact_number'])) ? $prefill_data['contact_number'] : '')) ?>">
+</div>
             <div>
-                <label for="email_address">Email Address</label>
-                <input type="email" name="email_address" id="email_address" 
-                       value="<?= htmlspecialchars($edit_mode ? $patient_data['email_address'] : 
-                                                ((!$edit_mode && isset($prefill_data['email'])) ? $prefill_data['email'] : '')) ?>">
+                <label for="email_address">Email Address <span style="color:red">*</span></label>
+    <input type="email" name="email_address" id="email_address" required
+           value="<?= htmlspecialchars($edit_mode ? $patient_data['email_address'] : 
+                                    ((!$edit_mode && isset($prefill_data['email'])) ? $prefill_data['email'] : '')) ?>">
             </div>
             <div>
                 <label for="fb_account">Facebook Account</label>
@@ -687,9 +689,9 @@ foreach ($services as $service) {
                        value="<?= htmlspecialchars($edit_mode ? $patient_data['fb_account'] : '') ?>">
             </div>
             <div class="full-width">
-                <label for="home_address">Home Address</label>
-                <textarea name="home_address" id="home_address" required><?= htmlspecialchars($edit_mode ? $patient_data['home_address'] : 
-                                                                        ((!$edit_mode && isset($prefill_data['address'])) ? $prefill_data['address'] : '')) ?></textarea>
+    <label for="home_address">Home Address <span style="color:red">*</span></label>
+    <textarea name="home_address" id="home_address" required><?= htmlspecialchars($edit_mode ? $patient_data['home_address'] : 
+                                                                ((!$edit_mode && isset($prefill_data['address'])) ? $prefill_data['address'] : '')) ?></textarea>
             </div>
             <div class="full-width">
                 <label for="work_address">Work Address</label>
@@ -746,7 +748,6 @@ foreach ($services as $service) {
                 <button type="submit" name="submit" class="btn"><?= $edit_mode ? 'Update Patient' : 'Save Patient' ?></button>
                 <?php if ($edit_mode): ?>
                     <a href="patient.php" class="btn cancel">Cancel</a>
-                    <a href="medicalhistory.php?patient_id=<?= $patient_data['patient_id'] ?>" class="btn health">Health Questionnaire</a>
                 <?php endif; ?>
             </div>
         </form>

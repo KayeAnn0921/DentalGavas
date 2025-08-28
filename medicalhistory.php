@@ -11,9 +11,21 @@ if (!$pdo) {
 
 // Get patient_id from URL if it exists
 $patient_id = isset($_GET['patient_id']) ? $_GET['patient_id'] : null;
+$gender = '';
+
+// Get patient's gender if patient_id is provided
+if (!empty($patient_id)) {
+    try {
+        $stmt = $pdo->prepare("SELECT sex FROM patients WHERE patient_id = ?");
+        $stmt->execute([$patient_id]);
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+        $gender = $patient['sex'] ?? '';
+    } catch (PDOException $e) {
+        error_log("Error fetching patient gender: " . $e->getMessage());
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Collect form data with proper sanitization
     // Use the patient_id from POST if submitted, otherwise from GET
     $patient_id = $_POST['patient_id'] ?? $patient_id;  
     
@@ -71,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          }
  
          // Redirect on success
-         header("Location: ".$_SERVER['PHP_SELF']."?success=1");
+         header("Location: ".$_SERVER['PHP_SELF']."?success=1&patient_id=".$patient_id);
          exit();
     } catch (PDOException $e) {
         $error_message = "Error: " . $e->getMessage();
@@ -90,6 +102,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .error { color: red; }
     .success { color: green; }
     .details-input { display: none; margin-top: 5px; }
+    .women-only-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #ff69b4;
+    }
+    .women-only-section h2 {
+        color: #d63384;
+        margin-top: 0;
+    }
   </style>
 </head>
 <body>
@@ -97,8 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <!-- Main content container -->
     <div class="main-content">
-
-
         <div class="form-container">
             <h1>Health Questionnaire</h1>
 
@@ -111,8 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-            <input type="hidden" name="patient_id" value="<?php echo htmlspecialchars($patient_id); ?>">
-                <!-- Form questions (same as before) -->
+                <input type="hidden" name="patient_id" value="<?php echo htmlspecialchars($patient_id); ?>">
 
                 <div class="question-group">
                     <div class="question">
@@ -191,14 +211,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <input type="text" id="allergy_details" name="allergy_details" class="details-input" placeholder="If yes, specify...">
                     </div>
+                </div>
 
+                <?php if (strtolower($gender) === 'female'): ?>
+                <div class="women-only-section">
                     <h2>For Women Only</h2>
 
                     <div class="question">
                         <label>Are you pregnant?</label><br>
                         <div class="radio-group">
                             <input type="radio" name="pregnant" value="Yes"> Yes
-                            <input type="radio" name="pregnant" value="No"> No
+                            <input type="radio" name="pregnant" value="No" checked> No
                         </div>
                     </div>
 
@@ -206,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label>Are you nursing?</label><br>
                         <div class="radio-group">
                             <input type="radio" name="nursing" value="Yes"> Yes
-                            <input type="radio" name="nursing" value="No"> No
+                            <input type="radio" name="nursing" value="No" checked> No
                         </div>
                     </div>
 
@@ -214,12 +237,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label>Are you taking birth control pills?</label><br>
                         <div class="radio-group">
                             <input type="radio" name="birth_control" value="Yes"> Yes
-                            <input type="radio" name="birth_control" value="No"> No
+                            <input type="radio" name="birth_control" value="No" checked> No
                         </div>
                     </div>
                 </div>
+                <?php else: ?>
+                    <!-- Hidden inputs for non-female patients to ensure database consistency -->
+                    <input type="hidden" name="pregnant" value="">
+                    <input type="hidden" name="nursing" value="">
+                    <input type="hidden" name="birth_control" value="">
+                <?php endif; ?>
 
                 <h2>Existing Medical Conditions</h2>
+                <p><em>Check all that apply:</em></p>
 
                 <div class="condition-list">
                     <?php
@@ -239,7 +269,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <br><br>
                 <div style="text-align:center;">
-                    <button type="submit">Submit</button>
+                    <button type="submit">Submit Health Questionnaire</button>
+                    <a href="patient.php" style="margin-left: 20px;">Back to Patient List</a>
                 </div>
             </form>
         </div>
@@ -257,15 +288,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Show relevant detail fields if "Yes" was previously selected
     document.addEventListener('DOMContentLoaded', function() {
+        // Debug: Log the gender value
+        console.log('Patient gender: <?php echo $gender; ?>');
+        
         const yesRadios = document.querySelectorAll('input[type="radio"][value="Yes"]');
         yesRadios.forEach(radio => {
             if (radio.checked) {
-                const detailsId = radio.name.replace('_condition', '_condition_details')
-                                          .replace('_illness', '_illness_details')
-                                          .replace('hospitalized', 'hospitalized_details')
-                                          .replace('medication', 'medication_details')
-                                          .replace('allergy', 'allergy_details');
-                showInput(detailsId);
+                const detailsId = radio.name + '_details';
+                const detailsInput = document.getElementById(detailsId);
+                if (detailsInput) {
+                    showInput(detailsId);
+                }
             }
         });
     });

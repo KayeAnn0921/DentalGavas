@@ -67,6 +67,7 @@ try {
             padding: 20px;
             margin: 20px auto;
             max-width: 1000px;
+            margin-left: 500px;
         }
         
         .view-header {
@@ -131,7 +132,6 @@ try {
             background-color: #f9f9f9;
         }
         
-        /* Styles for health questionnaire section */
         .health-section {
             grid-column: span 2;
             margin-top: 30px;
