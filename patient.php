@@ -1,6 +1,40 @@
 <?php
 include 'config.php';
 
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$edit_mode = false;
+$patient_data = [];
+
+if (isset($_GET['search_patients']) && isset($_GET['query'])) {
+    $searchQuery = trim($_GET['query']);
+    $patients = [];
+    
+    if (!empty($searchQuery)) {
+        try {
+            $sql = "SELECT patient_id, first_name, middle_name, last_name, mobile_number, email_address 
+                    FROM patients 
+                    WHERE first_name LIKE :query 
+                       OR middle_name LIKE :query 
+                       OR last_name LIKE :query 
+                       OR mobile_number LIKE :query
+                    ORDER BY last_name, first_name 
+                    LIMIT 10";
+            
+            $stmt = $pdo->prepare($sql);
+            $likeQuery = "%" . $searchQuery . "%";
+            $stmt->bindValue(':query', $likeQuery, PDO::PARAM_STR);
+            $stmt->execute();
+            $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Patient search error: " . $e->getMessage());
+            $patients = [];
+        }
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode($patients);
+    exit;
+}
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $edit_mode = false;
@@ -10,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
     $id = $_POST['delete'];
     try {
         $pdo->beginTransaction();
-
 
         $stmt = $pdo->prepare("SELECT chart_id FROM dental_charts WHERE patient_id = ?");
         $stmt->execute([$id]);
@@ -39,9 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
         echo "<script>alert('Error deleting patient: " . addslashes($e->getMessage()) . "');</script>";
     }
 }
-
-
-
 
 // Handle appointment data prefill
 $prefill_data = [];
@@ -134,8 +164,7 @@ if (isset($_POST['submit'])) {
     }
 }
 
-// Fetch patient data for list
-$itemsPerPage = 5;
+$itemsPerPage = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $itemsPerPage;
 $searchTerm = isset($_GET['searchInput']) ? htmlspecialchars($_GET['searchInput']) : '';
@@ -228,166 +257,16 @@ foreach ($services as $service) {
             margin: 0;
             padding: 0;
         }
-.main-content {
-    max-width: 1200px;
-    margin-top: 40px;
-    margin-left: 350px; /* Match your sidebar width */
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-    padding: 32px 36px 36px 36px;
-}
+        .main-content {
+            margin-top: 40px;
+            margin-left: 350px;
+            padding: 20px;
+        }
         h1 {
             color: #2563eb;
             font-size: 2.2rem;
             margin-bottom: 18px;
             letter-spacing: 1px;
-        }
-        .patient-form-section {
-            margin-bottom: 40px;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 32px;
-        }
-        .patient-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 22px 32px;
-        }
-        .patient-form label {
-            font-weight: 500;
-            color: #222;
-            margin-bottom: 4px;
-            display: block;
-        }
-        .patient-form input,
-        .patient-form select,
-        .patient-form textarea {
-            width: 100%;
-            padding: 9px 12px;
-            border-radius: 7px;
-            border: 1px solid #d1d5db;
-            font-size: 1rem;
-            background: #f9fafb;
-            margin-bottom: 8px;
-            transition: border 0.2s;
-        }
-        .patient-form input:focus,
-        .patient-form select:focus,
-        .patient-form textarea:focus {
-            border: 1.5px solid #2563eb;
-            outline: none;
-        }
-        .patient-form textarea {
-            min-height: 38px;
-            resize: vertical;
-        }
-        .patient-form .full-width {
-            grid-column: 1 / 3;
-        }
-        .patient-form .minor-fields {
-            grid-column: 1 / 3;
-            background: #f1f5f9;
-            border-radius: 8px;
-            padding: 18px 18px 0 18px;
-            margin-bottom: 12px;
-        }
-        .dropdown-multiselect {
-            position: relative;
-            width: 100%;
-            font-size: 1rem;
-        }
-        .dropdown-btn {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 7px;
-            border: 1.5px solid #d1d5db;
-            background: #f9fafb;
-            font-size: 1rem;
-            text-align: left;
-            cursor: pointer;
-            transition: border 0.2s, box-shadow 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            position: relative;
-        }
-        .dropdown-btn::after {
-            content: '';
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 7px solid #888;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-        .dropdown-multiselect.open .dropdown-btn,
-        .dropdown-btn:focus {
-            border: 1.5px solid #2563eb;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.08);
-            background: #f3f6fd;
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background: #fff;
-            min-width: 100%;
-            max-height: 260px;
-            overflow-y: auto;
-            border: 1.5px solid #2563eb;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(37,99,235,0.10);
-            z-index: 20;
-            margin-top: 4px;
-            padding: 6px 0;
-            animation: dropdownFadeIn 0.18s;
-        }
-        @keyframes dropdownFadeIn {
-            from { opacity: 0; transform: translateY(-8px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-        .dropdown-multiselect.open .dropdown-content {
-            display: block;
-        }
-        .dropdown-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 18px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.18s;
-            border: none;
-            background: none;
-            color: #222;
-            user-select: none;
-        }
-        .dropdown-option input[type="checkbox"] {
-            accent-color: #2563eb;
-            width: 18px;
-            height: 18px;
-            margin-right: 6px;
-            cursor: pointer;
-        }
-        .dropdown-option:hover {
-            background: #f1f5f9;
-            color: #2563eb;
-        }
-        .dropdown-content::-webkit-scrollbar {
-            width: 7px;
-            background: #f3f6fd;
-            border-radius: 8px;
-        }
-        .dropdown-content::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 8px;
-        }
-        .btn-row {
-            grid-column: 1 / 3;
-            display: flex;
-            gap: 14px;
-            margin-top: 10px;
         }
         .btn {
             background: #2563eb;
@@ -537,9 +416,187 @@ foreach ($services as $service) {
             background: #2563eb;
             color: #fff;
         }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 10px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .patient-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px 32px;
+        }
+        .patient-form label {
+            font-weight: 500;
+            color: #222;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .patient-form input,
+        .patient-form select,
+        .patient-form textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 7px;
+            border: 1px solid #d1d5db;
+            font-size: 1rem;
+            background: #f9fafb;
+            margin-bottom: 8px;
+            transition: border 0.2s;
+        }
+        .patient-form input:focus,
+        .patient-form select:focus,
+        .patient-form textarea:focus {
+            border: 1.5px solid #2563eb;
+            outline: none;
+        }
+        .patient-form textarea {
+            min-height: 38px;
+            resize: vertical;
+        }
+        .patient-form .full-width {
+            grid-column: 1 / 3;
+        }
+        .patient-form .minor-fields {
+            grid-column: 1 / 3;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 18px 18px 0 18px;
+            margin-bottom: 12px;
+        }
+        .dropdown-multiselect {
+            position: relative;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .dropdown-btn {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 7px;
+            border: 1.5px solid #d1d5db;
+            background: #f9fafb;
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .dropdown-btn::after {
+            content: '';
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 7px solid #888;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        .dropdown-multiselect.open .dropdown-btn,
+        .dropdown-btn:focus {
+            border: 1.5px solid #2563eb;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+            background: #f3f6fd;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: #fff;
+            min-width: 100%;
+            max-height: 260px;
+            overflow-y: auto;
+            border: 1.5px solid #2563eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.10);
+            z-index: 20;
+            margin-top: 4px;
+            padding: 6px 0;
+            animation: dropdownFadeIn 0.18s;
+        }
+        @keyframes dropdownFadeIn {
+            from { opacity: 0; transform: translateY(-8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .dropdown-multiselect.open .dropdown-content {
+            display: block;
+        }
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.18s;
+            border: none;
+            background: none;
+            color: #222;
+            user-select: none;
+        }
+        .dropdown-option input[type="checkbox"] {
+            accent-color: #2563eb;
+            width: 18px;
+            height: 18px;
+            margin-right: 6px;
+            cursor: pointer;
+        }
+        .dropdown-option:hover {
+            background: #f1f5f9;
+            color: #2563eb;
+        }
+        .dropdown-content::-webkit-scrollbar {
+            width: 7px;
+            background: #f3f6fd;
+            border-radius: 8px;
+        }
+        .dropdown-content::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 8px;
+        }
+        .btn-row {
+            grid-column: 1 / 3;
+            display: flex;
+            gap: 14px;
+            margin-top: 10px;
+        }
+        
         @media (max-width: 900px) {
             .main-content {
-                 margin-left: 300px; /* Reduced margin for slightly smaller screens */
+                 margin-left: 300px;
                 padding: 12px 2vw;
             }
             .patient-form {
@@ -554,7 +611,7 @@ foreach ($services as $service) {
         @media (max-width: 600px) {
             .main-content {
                 padding: 2px;
-                   margin-left: 120px; /* Smallest margin for mobile */
+                   margin-left: 120px;
             }
             .patient-form input,
             .patient-form select,
@@ -571,7 +628,85 @@ foreach ($services as $service) {
 
 <div class="main-content">
     <h1>Patient Information Record</h1>
-    <section class="patient-form-section">
+    
+    <button class="btn" onclick="openModal()">Add New Patient</button>
+    
+    <section class="patient-table-section">
+        <div class="table-header-row">
+            <h3>Patient List</h3>
+            <form method="GET" action="patient.php">
+                <input type="text" class="search-box" name="searchInput" placeholder="Search..." value="<?= htmlspecialchars($searchTerm) ?>">
+                <button type="submit">Search</button>
+                <?php if (!empty($searchTerm)): ?>
+                    <a href="patient.php" class="clear-search">Clear</a>
+                <?php endif; ?>
+            </form>
+        </div>
+        <div class="patient-table-container">
+            <table class="patient-table">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Patient Name</th>
+                        <th>Address</th>
+                        <th>Contact</th>
+                        <th>Service</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($results as $row): 
+                    // Fetch associated services
+                    $stmt = $pdo->prepare("SELECT s.name FROM patient_services ps JOIN services s ON ps.service_id = s.service_id WHERE ps.patient_id = ?");
+                    $stmt->execute([$row['patient_id']]);
+                    $services = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                    $serviceNames = implode(', ', $services);
+                ?>
+                <tr>
+                    <td><?= $row['patient_id'] ?></td>
+                    <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?></td>
+                    <td><?= $row['home_address'] ?></td>
+                    <td><?= $row['mobile_number'] ?></td>
+                    <td><?= htmlspecialchars($serviceNames) ?></td>
+                    <td class="action-icons">
+                        <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
+                     <form method="POST" action="patient.php" style="display:inline;">
+                        <input type="hidden" name="delete" value="<?= $row['patient_id'] ?>">
+                        <button type="submit" onclick="return confirmDelete();" class="delete-btn" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                                    <a href="medicalhistory.php?patient_id=<?= $row['patient_id'] ?>" title="Health Questionnaire"><i class="fas fa-file-medical"></i></a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?= ($page - 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Previous</a>
+                <?php endif; ?>
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="?page=<?= $i ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>" 
+                       class="<?= $i == $page ? 'active' : '' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?= ($page + 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Next</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Modal for Patient Form -->
+<div id="patientModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2><?= $edit_mode ? 'Edit Patient' : 'Add New Patient' ?></h2>
+        
         <form class="patient-form" action="" method="POST">
             <?php if ($edit_mode): ?>
                 <input type="hidden" name="patient_id" value="<?= $patient_data['patient_id'] ?>">
@@ -746,82 +881,12 @@ foreach ($services as $service) {
             </div>
             <div class="btn-row">
                 <button type="submit" name="submit" class="btn"><?= $edit_mode ? 'Update Patient' : 'Save Patient' ?></button>
-                <?php if ($edit_mode): ?>
-                    <a href="patient.php" class="btn cancel">Cancel</a>
-                <?php endif; ?>
+                <button type="button" class="btn cancel" onclick="closeModal()">Cancel</button>
             </div>
         </form>
-    </section>
-
-    <section class="patient-table-section">
-        <div class="table-header-row">
-            <h3>Patient List</h3>
-            <form method="GET" action="patient.php">
-                <input type="text" class="search-box" name="searchInput" placeholder="Search..." value="<?= htmlspecialchars($searchTerm) ?>">
-                <button type="submit">Search</button>
-                <?php if (!empty($searchTerm)): ?>
-                    <a href="patient.php" class="clear-search">Clear</a>
-                <?php endif; ?>
-            </form>
-        </div>
-        <div class="patient-table-container">
-            <table class="patient-table">
-                <thead>
-                    <tr>
-                        <th>Patient ID</th>
-                        <th>Patient Name</th>
-                        <th>Address</th>
-                        <th>Contact</th>
-                        <th>Service</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($results as $row): 
-                    // Fetch associated services
-                    $stmt = $pdo->prepare("SELECT s.name FROM patient_services ps JOIN services s ON ps.service_id = s.service_id WHERE ps.patient_id = ?");
-                    $stmt->execute([$row['patient_id']]);
-                    $services = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                    $serviceNames = implode(', ', $services);
-                ?>
-                <tr>
-                    <td><?= $row['patient_id'] ?></td>
-                    <td><?= $row['last_name'] ?>, <?= $row['first_name'] ?> <?= $row['middle_name'] ?></td>
-                    <td><?= $row['home_address'] ?></td>
-                    <td><?= $row['mobile_number'] ?></td>
-                    <td><?= htmlspecialchars($serviceNames) ?></td>
-                    <td class="action-icons">
-                        <a href="view_patient.php?id=<?= $row['patient_id'] ?>" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="patient.php?edit=<?= $row['patient_id'] ?>" title="Edit"><i class="fas fa-edit"></i></a>
-                     <form method="POST" action="patient.php" style="display:inline;">
-                        <input type="hidden" name="delete" value="<?= $row['patient_id'] ?>">
-                        <button type="submit" onclick="return confirmDelete();" class="delete-btn" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </form>
-                                    <a href="medicalhistory.php?patient_id=<?= $row['patient_id'] ?>" title="Health Questionnaire"><i class="fas fa-file-medical"></i></a>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-            <div class="pagination">
-                <?php if ($page > 1): ?>
-                    <a href="?page=<?= ($page - 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Previous</a>
-                <?php endif; ?>
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="?page=<?= $i ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>" 
-                       class="<?= $i == $page ? 'active' : '' ?>">
-                        <?= $i ?>
-                    </a>
-                <?php endfor; ?>
-                <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= ($page + 1) ?><?= !empty($searchTerm) ? '&searchInput='.urlencode($searchTerm) : '' ?>">Next</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
+    </div>
 </div>
+
 <script>
 function confirmDelete() {
     return confirm('Are you sure you want to delete this patient and all related records? This action cannot be undone.');
@@ -857,7 +922,33 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('birthdate').value) {
         calculateAge();
     }
+    
+    // Open modal if in edit mode
+    <?php if ($edit_mode): ?>
+        openModal();
+    <?php endif; ?>
 });
+
+// Modal functions
+function openModal() {
+    document.getElementById('patientModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('patientModal').style.display = 'none';
+    // Redirect to clear edit mode
+    <?php if ($edit_mode): ?>
+        window.location.href = 'patient.php';
+    <?php endif; ?>
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    var modal = document.getElementById('patientModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
 </script>
 </body>
 </html>

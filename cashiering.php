@@ -72,11 +72,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $discount_rate = (float)$row['rate'];
         }
     }
-    $discount = $total_price * ($discount_rate / 100);
+   $discount = $total_price * ($discount_rate / 100);
     $total = $total_price - $discount;
     if ($total < 0) $total = 0;
-    $balance = $total - $amount_paid;
-    if ($balance < 0) $balance = 0;
+
+    // Fix the balance calculation for staggered payments
+    if ($payment_type === 'staggered') {
+        $balance = $total - $amount_paid; // This is the remaining balance after initial payment
+        if ($balance < 0) $balance = 0;
+    } else {
+        // For fully paid, balance should be zero if amount_paid >= total
+        $balance = max(0, $total - $amount_paid);
+    }
 
     try {
         $stmt = $pdo->prepare("INSERT INTO billing (patient_id, total, discount, amount_paid, balance, payment_type, months, discount_id, discount_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -272,27 +279,28 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
 
       <?php
       // Installment indicator for latest staggered billing
-      if (!empty($patient_id) && !empty($services)) {
-          $stmt = $pdo->prepare("SELECT * FROM billing WHERE patient_id = ? AND months IS NOT NULL AND months > 1 ORDER BY billing_id DESC LIMIT 1");
-          $stmt->execute([$patient_id]);
-          $latestBill = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!empty($patient_id) && !empty($services)) {
+        $stmt = $pdo->prepare("SELECT * FROM billing WHERE patient_id = ? AND months IS NOT NULL AND months > 1 ORDER BY billing_id DESC LIMIT 1");
+        $stmt->execute([$patient_id]);
+        $latestBill = $stmt->fetch(PDO::FETCH_ASSOC);
 
-          if ($latestBill) {
-              $perMonth = $latestBill['total'] / $latestBill['months'];
-              $monthsPaid = floor($latestBill['amount_paid'] / $perMonth);
-              $createdAt = new DateTime($latestBill['created_at']);
-              echo "<div class='installment-indicator'><b>Installment Schedule:</b><br>";
-              for ($i = 1; $i <= $latestBill['months']; $i++) {
-                  $monthDate = clone $createdAt;
-                  $monthDate->modify('+' . ($i-1) . ' months');
-                  $paid = ($i <= $monthsPaid);
-                  echo "<span class='" . ($paid ? "paid" : "unpaid") . "'>";
-                  echo "Month $i: " . $monthDate->format('M Y') . " " . ($paid ? "Paid" : "Unpaid");
-                  echo "</span>";
-              }
-              echo "</div>";
-          }
-      }
+        if ($latestBill) {
+            $remainingBalance = $latestBill['total'] - $latestBill['amount_paid'];
+            $perMonth = $remainingBalance / $latestBill['months'];
+            $monthsPaid = floor($latestBill['amount_paid'] / $perMonth);
+            $createdAt = new DateTime($latestBill['created_at']);
+            echo "<div class='installment-indicator'><b>Installment Schedule:</b><br>";
+            for ($i = 1; $i <= $latestBill['months']; $i++) {
+                $monthDate = clone $createdAt;
+                $monthDate->modify('+' . ($i-1) . ' months');
+                $paid = ($i <= $monthsPaid);
+                echo "<span class='" . ($paid ? "paid" : "unpaid") . "'>";
+                echo "Month $i: " . $monthDate->format('M Y') . " " . ($paid ? "Paid" : "Unpaid");
+                echo "</span>";
+            }
+            echo "</div>";
+        }
+    }
       ?>
 
       <div class="form-group">
@@ -398,9 +406,13 @@ function updateMonthlyPayment() {
   var paymentType = document.getElementById('payment_type').value;
   var months = parseInt(document.getElementById('months').value) || 1;
   var totalInput = document.getElementById('total_amount');
+  var amountPaidInput = document.getElementById('amount_paid');
   var monthlyGroup = document.getElementById('monthly_payment_group');
   var monthlyDisplay = document.getElementById('monthly_payment_display');
-  var balance = parseFloat(totalInput.value) || 0;
+  
+  var totalAmount = parseFloat(totalInput.value) || 0;
+  var amountPaid = parseFloat(amountPaidInput.value) || 0;
+  var balance = totalAmount - amountPaid;
 
   if (paymentType === 'staggered' && months > 0) {
     var perMonth = balance / months;
@@ -412,7 +424,6 @@ function updateMonthlyPayment() {
     monthlyDisplay.value = formatPeso(0);
   }
 }
-
 // AJAX fetch discount rate for selected type and update totals
 function setDiscountAmount() {
   var discountType = document.getElementById('discount_type').value;
@@ -457,12 +468,16 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleMonthsField();
   toggleIdField();
   updateMonthlyPayment();
+  
   document.getElementById('payment_type').addEventListener('change', function() {
     toggleMonthsField();
     updateMonthlyPayment();
   });
+  
   document.getElementById('months').addEventListener('input', updateMonthlyPayment);
   document.getElementById('total_amount').addEventListener('input', updateMonthlyPayment);
+  document.getElementById('amount_paid').addEventListener('input', updateMonthlyPayment); // Add this line
+  
   document.getElementById('discount_type').addEventListener('change', function() {
     setDiscountAmount();
     toggleIdField();

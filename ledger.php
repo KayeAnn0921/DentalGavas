@@ -13,15 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_amount'])) {
         $stmt->execute([$billing_id, $payment_amount, $remarks]);
 
         // Update billing table
-        $stmt = $pdo->prepare("SELECT balance FROM billing WHERE billing_id = ?");
+        $stmt = $pdo->prepare("SELECT balance, amount_paid FROM billing WHERE billing_id = ?");
         $stmt->execute([$billing_id]);
         $bill = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($bill) {
             $new_balance = $bill['balance'] - $payment_amount;
             if ($new_balance < 0) $new_balance = 0;
+            
+            $new_amount_paid = $bill['amount_paid'] + $payment_amount;
 
-            $stmt = $pdo->prepare("UPDATE billing SET balance = ? WHERE billing_id = ?");
-            $stmt->execute([$new_balance, $billing_id]);
+            $stmt = $pdo->prepare("UPDATE billing SET balance = ?, amount_paid = ? WHERE billing_id = ?");
+            $stmt->execute([$new_balance, $new_amount_paid, $billing_id]);
         }
 
         $message = "Payment recorded in ledger!";
@@ -67,7 +69,7 @@ include 'sidebar.php';
             padding: 0;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 40px auto 0 auto;
             background: #fff;
             padding: 32px 32px 28px 32px;
@@ -194,6 +196,15 @@ include 'sidebar.php';
             color: #1746a2;
             text-decoration: underline;
         }
+        .recalc-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
         @media (max-width: 700px) {
             .container { padding: 12px 2vw; }
             .info-row { flex-direction: column; gap: 7px; }
@@ -214,76 +225,107 @@ include 'sidebar.php';
     
 <?php if (!empty($bill['months']) && $bill['months'] > 1): ?>
     <?php
-        $months = (int)$bill['months'];
-        $remainingBalance = $bill['balance'];
-
-        // Compute equal monthly payment, last month gets remainder
-        $perMonth = $months > 0 ? floor(($remainingBalance / $months) * 100) / 100 : 0;
+        $totalMonths = (int)$bill['months'];
+        $totalPaid = array_sum(array_column($entries, 'payment_amount'));
         $createdAt = new DateTime($bill['created_at']);
-
-        // Payments already made
-        $payments = array_column($entries, 'payment_amount');
-        $totalPaid = array_sum($payments);
-        $remainingPaid = $totalPaid;
+        
+        // Calculate remaining balance
+        $remainingBalance = $bill['balance'];
+        
+        // Always use the adjusted monthly amount (never go back to original)
+        if ($remainingBalance > 0) {
+            // If there's still balance, calculate adjusted monthly amount
+            $paidMonths = floor($bill['amount_paid'] / ($bill['total'] / $totalMonths));
+            $remainingMonths = $totalMonths - $paidMonths;
+            $adjustedMonthly = $remainingBalance / max(1, $remainingMonths);
+        } else {
+            // If fully paid, use the last known adjusted amount
+            // Calculate what the adjusted amount was before full payment
+            $adjustedMonthly = $bill['total'] / $totalMonths; // Default to original
+            if ($totalPaid > 0 && $bill['amount_paid'] > $bill['total']) {
+                // If overpaid, use the average payment amount
+                $adjustedMonthly = $bill['amount_paid'] / $totalMonths;
+            } elseif ($totalPaid > 0) {
+                // Use the actual average payment amount
+                $adjustedMonthly = $bill['amount_paid'] / $totalMonths;
+            }
+        }
+        
+        // Recalculate paid months based on adjusted amount
+        $paidMonths = floor($bill['amount_paid'] / $adjustedMonthly);
+        $remainingMonths = $totalMonths - $paidMonths;
+        $remainingPayment = $totalPaid;
+        
+        // Build the payment schedule
+        $monthlySchedule = [];
+        
+        for ($i = 0; $i < $totalMonths; $i++) {
+            $dueDate = clone $createdAt;
+            $dueDate->modify('+' . $i . ' months');
+            
+            $paidForThisMonth = 0;
+            $status = 'Unpaid';
+            
+            if ($i < $paidMonths) {
+                // Past months - fully paid at adjusted rate
+                $paidForThisMonth = $adjustedMonthly;
+                $remainingPayment -= $adjustedMonthly;
+                $status = 'Paid';
+            } elseif ($i == $paidMonths && $remainingPayment > 0) {
+                // Current month - partially paid
+                $paidForThisMonth = min($remainingPayment, $adjustedMonthly);
+                $remainingPayment -= $paidForThisMonth;
+                $status = ($paidForThisMonth >= $adjustedMonthly) ? 'Paid' : 'Partial';
+            }
+            // Future months remain Unpaid with $paidForThisMonth = 0
+            
+            $monthlySchedule[$i] = [
+                'month' => $i + 1,
+                'due_date' => $dueDate,
+                'monthly_due' => $adjustedMonthly, // Always the adjusted amount
+                'paid' => $paidForThisMonth,
+                'remaining' => $adjustedMonthly - $paidForThisMonth,
+                'status' => $status
+            ];
+        }
     ?>
+    
     <div style="background:#e3f2fd;padding:10px 18px;border-radius:8px;margin-bottom:18px;font-size:1.08rem;color:#1976D2;">
-        <b>Monthly Payment:</b>
-        ₱<?= number_format($remainingBalance / $months, 2) ?> 
-        <span style="font-size:0.97em;color:#388e3c;">(<?= $months ?> months)</span>
+        <b>Monthly Payment Plan:</b>
+        <span style="font-size:0.97em;color:#388e3c;">
+            (<?= $totalMonths ?> months @ ₱<?= number_format($adjustedMonthly, 2) ?> per month)
+        </span>
     </div>
+
     <table style="margin-bottom:18px;">
         <thead>
             <tr>
                 <th>Month #</th>
                 <th>Due Date</th>
-                <th>Expected Due</th>
-                <th>Actual Paid</th>
+                <th>Monthly Due</th>
+                <th>Paid</th>
+                <th>Remaining</th>
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
-        <?php
-        $balanceLeft = $bill['balance'];
-
-        for ($i = 1; $i <= $months; $i++) {
-            $dueDate = clone $createdAt;
-            $dueDate->modify('+' . ($i-1) . ' months');
-
-            if ($i < $months) {
-                $expectedDue = round($remainingBalance / $months, 2);
-                $balanceLeft -= $expectedDue;
-            } else {
-                $expectedDue = $balanceLeft;
-            }
-
-            $monthPaid = 0;
-            if ($remainingPaid > 0) {
-                if ($remainingPaid >= $expectedDue) {
-                    $monthPaid = $expectedDue;
-                    $remainingPaid -= $expectedDue;
-                } else {
-                    $monthPaid = $remainingPaid;
-                    $remainingPaid = 0;
-                }
-            }
-
-            if ($monthPaid >= $expectedDue) {
-                $status = '<span style="color:#388e3c;font-weight:600;">Paid</span>';
-            } elseif ($monthPaid > 0) {
-                $status = '<span style="color:#ffc107;font-weight:600;">Partial</span>';
-            } else {
-                $status = '<span style="color:#d32f2f;font-weight:600;">Unpaid</span>';
-            }
-
-            echo '<tr>';
-            echo '<td>' . $i . '</td>';
-            echo '<td>' . $dueDate->format('F Y') . '</td>';
-            echo '<td>₱' . number_format($expectedDue, 2) . '</td>';
-            echo '<td>₱' . number_format(max(0, $monthPaid), 2) . '</td>';
-            echo '<td>' . $status . '</td>';
-            echo '</tr>';
-        }
-        ?>
+        <?php foreach ($monthlySchedule as $schedule): ?>
+            <tr>
+                <td><?= $schedule['month'] ?></td>
+                <td><?= $schedule['due_date']->format('F Y') ?></td>
+                <td>₱<?= number_format($schedule['monthly_due'], 2) ?></td>
+                <td>₱<?= number_format($schedule['paid'], 2) ?></td>
+                <td>₱<?= number_format($schedule['remaining'], 2) ?></td>
+                <td>
+                    <?php
+                    $statusColor = '#d32f2f'; // red for unpaid
+                    if ($schedule['status'] == 'Paid') $statusColor = '#388e3c'; // green
+                    elseif ($schedule['status'] == 'Partial') $statusColor = '#ff9800'; // orange
+                    ?>
+                    <span style="color:<?= $statusColor ?>;font-weight:600;"><?= $schedule['status'] ?></span>
+                </td>
+            </tr>
+        <?php endforeach; ?>
         </tbody>
     </table>
 <?php endif; ?>
@@ -333,9 +375,15 @@ include 'sidebar.php';
 </div>
 </body>
 <script>
+    
 function printLedger() {
     const bill = <?= json_encode($bill) ?>;
     const ledger = <?= json_encode($entries) ?>;
+    const monthlySchedule = <?= json_encode(isset($monthlySchedule) ? array_map(function($item) {
+        $item['due_date'] = $item['due_date']->format('Y-m-d');
+        return $item;
+    }, $monthlySchedule) : []) ?>;
+    
     const patientName = bill.full_name || '';
     const billingId = <?= (int)$billing_id ?>;
     const createdAt = new Date(bill.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -346,6 +394,63 @@ function printLedger() {
             maximumFractionDigits: 2
         });
     };
+
+    // Generate payment plan table if applicable
+    let paymentPlanHTML = '';
+    let remainingMonthsInfo = '';
+    
+    if (bill.months && bill.months > 1 && monthlySchedule.length > 0) {
+        // Calculate remaining months and current monthly payment from the schedule
+        // Calculate remaining months and current monthly payment from the schedule
+const remainingMonths = monthlySchedule.filter(month => month.status !== 'Paid').length;
+const currentMonthlyPayment = remainingMonths > 0 ? monthlySchedule[monthlySchedule.length - remainingMonths].monthly_due : 0;
+
+// Safe display of remaining months info
+remainingMonthsInfo = remainingMonths > 0 ? 
+    `${remainingMonths} months remaining @ ${formatCurrency(currentMonthlyPayment)} per month` : 
+    'Fully Paid';
+        
+        paymentPlanHTML = `
+            <div style="margin-top: 20px;">
+                <h3 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 5px;">Monthly Payment Plan</h3>
+                <p style="margin-bottom: 15px; color: #388e3c;">${remainingMonthsInfo}</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ccc; padding: 8px; background: #f0f0f0;">Month</th>
+                            <th style="border: 1px solid #ccc; padding: 8px; background: #f0f0f0;">Due Date</th>
+                            <th style="border: 1px solid #ccc; padding: 8px; background: #f0f0f0;">Monthly Due</th>
+                            <th style="border: 1px solid #ccc; padding: 8px; background: #f0f0f0;">Paid</th>
+                            <th style="border: 1px solid #ccc; padding: 8px; background: #f0f0f0;">Remaining</th>
+                            <th style="border: 1px solid #ccc; padding: 8px; background: #f0f0f0;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        monthlySchedule.forEach(schedule => {
+            const dueDate = new Date(schedule.due_date);
+            const formattedDueDate = dueDate.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let statusStyle = 'color: #F44336; font-weight: bold;';
+            if (schedule.status === 'Paid') {
+                statusStyle = 'color: green; font-weight: bold;';
+            } else if (schedule.status === 'Partial') {
+                statusStyle = 'color: orange; font-weight: bold;';
+            }
+            
+            paymentPlanHTML += `
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${schedule.month}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${formattedDueDate}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${formatCurrency(schedule.monthly_due)}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${formatCurrency(schedule.paid)}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${formatCurrency(schedule.remaining)}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px; ${statusStyle}">${schedule.status}</td>
+                </tr>`;
+        });
+        
+        paymentPlanHTML += `</tbody></table></div>`;
+    }
 
     let paymentsHTML = '';
     if (ledger.length) {
@@ -372,78 +477,156 @@ function printLedger() {
         paymentsHTML = '<p style="color:#b71c1c;">No payments recorded.</p>';
     }
 
-    const printWindow = window.open('', '', 'width=800,height=600');
+    const printWindow = window.open('', '', 'width=900,height=700');
     printWindow.document.write(`
         <html>
-        <head>
-            <title>Ledger Print View</title>
-            <style>
-                body {
-                    font-family: Georgia, serif;
-                    background: #fff;
-                    padding: 40px;
-                }
-                .clinic-header {
-                    text-align: center;
-                    margin-bottom: 20px;
-                    font-size: 1.1em;
-                }
-                .report-title {
-                    text-align: center;
-                    font-size: 2em;
-                    font-weight: bold;
-                    color: #1976d2;
-                    margin-bottom: 20px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 20px;
-                }
-                th, td {
-                    border: 1px solid #ccc;
-                    padding: 8px;
-                    text-align: left;
-                }
-                th {
-                    background-color: #f5f5f5;
-                }
-                .summary-box {
-                    margin-bottom: 25px;
-                    font-size: 1.1em;
-                }
-                .signature {
-                    text-align: right;
-                    margin-top: 60px;
-                    font-size: 1em;
-                }
-            </style>
-        </head>
-        <body onload="window.print(); window.close();">
-            <div class="clinic-header">
-                <strong>Dr. Glenn E. Gavas, DMD</strong><br>
-                Gavas Dental Clinic<br>
-                Door 1, Ferrer Building, Saging Street, General Santos City<br>
-                Phone: (083) 123-4567
-            </div>
-            <div class="report-title">Ledger Report</div>
-            <div class="summary-box">
-                <p><strong>Patient Name:</strong> ${patientName}</p>
-                <p><strong>Billing ID:</strong> ${billingId}</p>
-                <p><strong>Date Created:</strong> ${createdAt}</p>
-                <p><strong>Total:</strong> ${formatCurrency(bill.total)}</p>
-                <p><strong>Amount Paid:</strong> ${formatCurrency(bill.amount_paid)}</p>
-                <p><strong>Balance:</strong> ${formatCurrency(bill.balance)}</p>
-            </div>
-            <h3>Payment History</h3>
-            ${paymentsHTML}
-            <div class="signature">
-                <strong>Dr. Glenn E. Gavas, DMD</strong><br>
-                DEA No. 1234563<br>
-                State License No. 65432
-            </div>
-        </body>
-        </html>
+<head>
+    <title>Ledger Print View</title>
+    <style>
+        body {
+            font-family: Georgia, serif;
+            background: #fff;
+            padding: 40px;
+        }
+        .clinic-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        .report-title {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .summary-box {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+        .signature {
+            text-align: right;
+            margin-top: 60px;
+            font-size: 1em;
+        }
+
+        /* Add to the print styles section */
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .receipt-header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: #1976d2;
+            text-align: center;
+        }
+        .receipt-header p {
+            text-align: center;
+            margin: 5px 0;
+        }
+        .receipt-details {
+            margin: 15px 0;
+        }
+        .receipt-line {
+            border-top: 1px dashed #ccc;
+            margin: 10px 0;
+        }
+        .amount-due {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        /* Center the patient details table */
+        .patient-details {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .patient-details td {
+            border: none;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body onload="window.print(); window.close();">
+    <div class="receipt-header">
+        <h1>GAVAS DENTAL CLINIC</h1>
+        <p>Door 1, Ferrer Building, Saging Street, General Santos City</p>
+        <p>Phone: (083) 123-4567 | TIN: 123-456-789-0000</p>
+    </div>
+    
+    <div class="report-title">Ledger Report</div>
+   
+    <div class="summary-box">
+        <table class="patient-details">
+            <tr>
+                <td style="text-align: right; width: 25%;"><strong>Patient Name:</strong></td>
+                <td style="width: 25%;">${patientName}</td>
+                <td style="text-align: right; width: 25%;"><strong>Billing ID:</strong></td>
+                <td style="width: 25%;">${billingId}</td>
+            </tr>
+            <tr>
+                <td style="text-align: right;"><strong>Date Created:</strong></td>
+                <td>${createdAt}</td>
+                <td style="text-align: right;"><strong>Payment Plan:</strong></td>
+                <td>${bill.months || 1} month(s) - Adjusted</td>
+            </tr>
+        </table>
+        
+        ${paymentPlanHTML}
+        
+        <table style="width:100%; border:1px solid #ccc; margin: 0 auto 20px auto;">
+            <tr>
+                <td style="border:1px solid #ccc; padding:8px; background:#f5f5f5;"><strong>Total Amount:</strong></td>
+                <td style="border:1px solid #ccc; padding:8px; text-align:right;">${formatCurrency(bill.total)}</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ccc; padding:8px; background:#f5f5f5;"><strong>Amount Paid:</strong></td>
+                <td style="border:1px solid #ccc; padding:8px; text-align:right;">${formatCurrency(bill.amount_paid)}</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ccc; padding:8px; background:#f5f5f5;">
+                    <strong>Remaining Balance:</strong>
+                </td>
+                <td style="border:1px solid #ccc; padding:8px; text-align:right;">${formatCurrency(bill.balance)}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <h3 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 5px; text-align: center;">Payment History</h3>
+    ${paymentsHTML}
+
+    <div class="receipt-line"></div>
+    <div class="amount-due">
+        <p>TOTAL AMOUNT DUE: ${formatCurrency(bill.balance)}</p>
+    </div>
+    <div class="receipt-line"></div>
+    
+    <div class="signature">
+        <strong>Dr. Glenn E. Gavas, DMD</strong><br>
+        DEA No. 1234563<br>
+        State License No. 65432
+    </div>
+</body>
+</html>
     `);
     printWindow.document.close();
 }
