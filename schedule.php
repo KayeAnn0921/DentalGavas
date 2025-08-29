@@ -1,5 +1,5 @@
 <?php include 'config.php'; ?>
-  <?php include 'sidebar.php'; ?>
+<?php include 'sidebar.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +19,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-left:  20px; /* Adjust based on sidebar width */
+      margin-left: 20px; /* Adjust based on sidebar width */
     }
     .schedule-card {
       background: #fff;
@@ -61,6 +61,96 @@
     .doctor-schedule-btn .btn:hover {
       background: #1256a3;
     }
+    
+    /* Patient Search Styles */
+    .patient-search-section {
+      background: #f8f9ff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #e3f2fd;
+    }
+    .patient-search-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      color: #1976d2;
+      font-weight: 600;
+    }
+    .search-input-group {
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .search-input-group input {
+      width: 100%;
+      padding: 10px 40px 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #b0bec5;
+      font-size: 1em;
+      background: #fff;
+    }
+    .search-input-group i {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #1976d2;
+    }
+    .search-results {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      margin-top: 5px;
+      display: none;
+    }
+    .search-result-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+    .search-result-item:hover {
+      background: #f5f5f5;
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .patient-name {
+      font-weight: 600;
+      color: #333;
+    }
+    .patient-details {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 2px;
+    }
+    .new-patient-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .new-patient-toggle input[type="checkbox"] {
+      transform: scale(1.2);
+      accent-color: #1976d2;
+    }
+    .clear-search-btn {
+      background: #ff5722;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 0.9em;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .clear-search-btn:hover {
+      background: #e64919;
+    }
+
     form {
       margin-top: 18px;
     }
@@ -94,6 +184,11 @@
       border: 1.5px solid #1976d2;
       outline: none;
       background: #e3f2fd;
+    }
+    .form-group input:disabled {
+      background: #e9ecef;
+      color: #6c757d;
+      cursor: not-allowed;
     }
     #timeSlotsContainer {
       margin-top: 6px;
@@ -152,6 +247,126 @@
   </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
+// Patient Search Functions
+let searchTimeout;
+let selectedPatientId = null;
+
+function searchPatients() {
+  const query = $('#patientSearch').val().trim();
+  
+  if (query.length < 2) {
+    $('#searchResults').hide();
+    return;
+  }
+  
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    $.ajax({
+      url: 'patient.php',
+      type: 'GET',
+      data: {
+        search_patients: true,
+        query: query
+      },
+      dataType: 'json',
+      success: function(patients) {
+        displaySearchResults(patients);
+      },
+      error: function() {
+        $('#searchResults').html('<div class="search-result-item">Error searching patients</div>').show();
+      }
+    });
+  }, 300);
+}
+
+function displaySearchResults(patients) {
+  const resultsContainer = $('#searchResults');
+  
+  if (patients.length === 0) {
+    resultsContainer.html('<div class="search-result-item">No patients found</div>').show();
+    return;
+  }
+  
+  let html = '';
+  patients.forEach(patient => {
+    html += `
+      <div class="search-result-item" onclick="selectPatient(${patient.patient_id})">
+        <div class="patient-name">${patient.last_name}, ${patient.first_name} ${patient.middle_name || ''}</div>
+        <div class="patient-details">
+          ${patient.mobile_number || ''} 
+          ${patient.email_address ? '• ' + patient.email_address : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  resultsContainer.html(html).show();
+}
+
+function selectPatient(patientId) {
+  selectedPatientId = patientId;
+  
+  // Fetch full patient details
+  $.ajax({
+    url: 'get_patient_details.php',
+    type: 'GET',
+    data: { patient_id: patientId },
+    dataType: 'json',
+    success: function(patient) {
+      if (patient) {
+        // Populate form fields
+        $('#first_name').val(patient.first_name).prop('disabled', true);
+        $('#last_name').val(patient.last_name).prop('disabled', true);
+        $('#contactNumber').val(patient.mobile_number).prop('disabled', true);
+        
+        // Update search input to show selected patient
+        $('#patientSearch').val(`${patient.last_name}, ${patient.first_name} ${patient.middle_name || ''}`);
+        
+        // Hide search results
+        $('#searchResults').hide();
+        
+        // Show clear button
+        $('#clearSearchBtn').show();
+        
+        // Set form as existing patient
+        $('#newPatientCheck').prop('checked', false);
+        toggleNewPatientFields();
+      }
+    },
+    error: function() {
+      alert('Error loading patient details');
+    }
+  });
+}
+
+function clearPatientSearch() {
+  selectedPatientId = null;
+  $('#patientSearch').val('');
+  $('#searchResults').hide();
+  $('#clearSearchBtn').hide();
+  
+  // Enable and clear form fields
+  $('#first_name, #last_name, #contactNumber').prop('disabled', false).val('');
+  
+  // Reset new patient checkbox
+  $('#newPatientCheck').prop('checked', true);
+  toggleNewPatientFields();
+}
+
+function toggleNewPatientFields() {
+  const isNewPatient = $('#newPatientCheck').is(':checked');
+  
+  if (isNewPatient) {
+    // Enable fields for new patient
+    $('#first_name, #last_name, #contactNumber').prop('disabled', false);
+    $('.patient-search-section').hide();
+  } else {
+    // Show search section for existing patient
+    $('.patient-search-section').show();
+  }
+}
+
+// Time slot functions (existing code)
 function pad(num) {
   return num < 10 ? '0' + num : num;
 }
@@ -273,6 +488,21 @@ function fetchDoctorAvailableDates(doctor) {
 }
 
 $(function() {
+  // Initialize with new patient mode
+  $('#newPatientCheck').prop('checked', true);
+  toggleNewPatientFields();
+  
+  // Patient search event handlers
+  $('#patientSearch').on('input', searchPatients);
+  $('#newPatientCheck').on('change', toggleNewPatientFields);
+  
+  // Hide search results when clicking outside
+  $(document).on('click', function(e) {
+    if (!$(e.target).closest('.patient-search-section').length) {
+      $('#searchResults').hide();
+    }
+  });
+
   // Fetch available dates when doctor changes
   $("#doctor").on("change", function() {
     fetchDoctorAvailableDates($(this).val());
@@ -298,6 +528,18 @@ $(function() {
 
   // Update slots when any relevant field changes
   $('#appointmentDate, #doctor, #duration').on('change', updateSlots);
+  
+  // Form submission handler
+  $('form').on('submit', function(e) {
+    // Add selected patient ID to form if existing patient
+    if (selectedPatientId) {
+      $('<input>').attr({
+        type: 'hidden',
+        name: 'existing_patient_id',
+        value: selectedPatientId
+      }).appendTo(this);
+    }
+  });
 });
   </script>
  </head>
@@ -313,6 +555,27 @@ $(function() {
     <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
       <div class="alert alert-success">Appointment successfully scheduled!</div>
     <?php endif; ?>
+    
+    <!-- Patient Type Selection -->
+    <div class="new-patient-toggle">
+      <input type="checkbox" id="newPatientCheck">
+      <label for="newPatientCheck">New Patient</label>
+    </div>
+    
+    <!-- Patient Search Section (hidden by default) -->
+    <div class="patient-search-section" style="display: none;">
+      <div class="patient-search-header">
+        <i class="fas fa-search"></i>
+        <span>Search Existing Patient</span>
+      </div>
+      <div class="search-input-group">
+        <input type="text" id="patientSearch" placeholder="Search by name or mobile number...">
+        <i class="fas fa-search"></i>
+        <button type="button" id="clearSearchBtn" class="clear-search-btn" onclick="clearPatientSearch()" style="display: none;">Clear</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+    
     <form action="save_appointment.php" method="POST">
       <div class="form-row">
         <div class="form-group">
